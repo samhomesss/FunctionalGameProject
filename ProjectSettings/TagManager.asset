@@ -3,7 +3,12 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Apple
+  - Iron
+  - Plant
+  - PlantRespawn
+  - Rocket
   layers:
   - Default
   - TransparentFX
@@ -12,8 +17,8 @@ TagManager:
   - Water
   - UI
   - 
-  - 
-  - 
+  - Item
+  - Event
   - 
   - 
   - 
