@@ -1,24 +1,25 @@
-ï»¿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
+
+// Ã³À½¿¡ ÀÌº¥Æ®ÀÇ Á¾·ù¸¦ ³ªÅ¸³»´Â class.
 public class Event
-{ // ì´ë²¤íŠ¸ ì¢…ë¥˜.
+{ // ÀÌº¥Æ® Á¾·ù.
     public enum TYPE
     {
-        NONE = -1,  // ì—†ìŒ.
-        ROCKET = 0, // ìš°ì£¼ì„  ìˆ˜ë¦¬.
-        NUM,        // ì´ë²¤íŠ¸ê°€ ëª‡ ì¢…ë¥˜ ìˆëŠ”ì§€ ë‚˜íƒ€ë‚¸ë‹¤(=1).
+        NONE = -1, // ¾øÀ½.
+        ROCKET = 0, // ¿ìÁÖ¼± ¼ö¸®.
+        NUM, // ÀÌº¥Æ®°¡ ¸î Á¾·ù ÀÖ´ÂÁö ³ªÅ¸³½´Ù(=1).
     };
 };
-
 public class EventRoot : MonoBehaviour
 {
-
     public Event.TYPE getEventType(GameObject event_go)
     {
         Event.TYPE type = Event.TYPE.NONE;
         if (event_go != null)
-        { // ì¸ìˆ˜ì˜ GameObjectê°€ ë¹„ì–´ìˆì§€ ì•Šìœ¼ë©´.
+        { // ÀÎ¼öÀÇ GameObject°¡ ºñ¾îÀÖÁö ¾ÊÀ¸¸é.
             if (event_go.tag == "Rocket")
             {
                 type = Event.TYPE.ROCKET;
@@ -26,31 +27,34 @@ public class EventRoot : MonoBehaviour
         }
         return (type);
     }
-
+    // Ã¶±¤¼®ÀÌ³ª ½Ä¹°À» µç »óÅÂ¿¡¼­ ¿ìÁÖ¼±¿¡ Á¢ÃËÇß´ÂÁö È®ÀÎ
     public bool isEventIgnitable(Item.TYPE carried_item, GameObject event_go)
     {
+       
         bool ret = false;
         Event.TYPE type = Event.TYPE.NONE;
         if (event_go != null)
         {
-            type = this.getEventType(event_go); // ì´ë²¤íŠ¸ íƒ€ì…ì„ êµ¬í•œë‹¤.
+            type = this.getEventType(event_go); // ÀÌº¥Æ® Å¸ÀÔÀ» ±¸ÇÑ´Ù.
         }
         switch (type)
         {
             case Event.TYPE.ROCKET:
+                // °¡Áö°í ÀÖ´Â °ÍÀÌ Ã¶±¤¼®ÀÌ¶ó¸é.
                 if (carried_item == Item.TYPE.IRON)
-                { // ê°€ì§€ê³  ìˆëŠ” ê²ƒì´ ì² ê´‘ì„ì´ë¼ë©´.
-                    ret = true;  // 'ì´ë²¤íŠ¸í•  ìˆ˜ ìˆì–´ìš”ï¼'ë¼ê³  ì‘ë‹µí•œë‹¤.
+                {
+                    ret = true; // 'ÀÌº¥Æ®ÇÒ ¼ö ÀÖ¾î¿ä£¡'¶ó°í ÀÀ´äÇÑ´Ù.
                 }
+                // °¡Áö°í ÀÖ´Â °ÍÀÌ ½Ä¹°ÀÌ¶ó¸é.
                 if (carried_item == Item.TYPE.PLANT)
-                { // ê°€ì§€ê³  ìˆëŠ” ê²ƒì´ ì‹ë¬¼ì´ë¼ë©´.
-                    ret = true; // 'ì´ë²¤íŠ¸í•  ìˆ˜ ìˆì–´ìš”ï¼'ë¼ê³  ì‘ë‹µí•œë‹¤.
+                {
+                    ret = true; // 'ÀÌº¥Æ®ÇÒ ¼ö ÀÖ¾î¿ä£¡'¶ó°í ÀÀ´äÇÑ´Ù.
                 }
                 break;
         }
         return (ret);
     }
-
+    // ÁöÁ¤µÈ °ÔÀÓ ¿ÀºêÁ§Æ®ÀÇ ÀÌº¥Æ® Å¸ÀÔ ¹İÈ¯
     public string getIgnitableMessage(GameObject event_go)
     {
         string message = "";
@@ -62,7 +66,7 @@ public class EventRoot : MonoBehaviour
         switch (type)
         {
             case Event.TYPE.ROCKET:
-                message = "ìˆ˜ë¦¬í•œë‹¤";
+                message = "¼ö¸®ÇÑ´Ù";
                 break;
         }
         return (message);

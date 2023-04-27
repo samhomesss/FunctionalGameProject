@@ -1,134 +1,70 @@
-ï»¿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic; // Listë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œ.
+using System.Collections.Generic;
+using UnityEngine;
 
 public class Item
 {
     public enum TYPE
-    { // ì•„ì´í…œ ì¢…ë¥˜.
-        NONE = -1, // ì—†ìŒ.
-        IRON = 0, // ì² ê´‘ì„.
-        APPLE, // ì‚¬ê³¼.
-        PLANT, // ì‹ë¬¼.
-        NUM, // ì•„ì´í…œì´ ëª‡ ì¢…ë¥˜ì¸ê°€ ë‚˜íƒ€ë‚¸ë‹¤(=3).
-    };
+    { // ¾ÆÀÌÅÛ Á¾·ù.
+        NONE = -1, IRON = 0, APPLE, PLANT, // ¾øÀ½, Ã¶±¤¼®, »ç°ú, ½Ä¹°.
+        NUM,
+    }; // ¾ÆÀÌÅÛÀÌ ¸î Á¾·ùÀÎ°¡ ³ªÅ¸³½´Ù(=3).
 };
 
 public class ItemRoot : MonoBehaviour
 {
-
     public GameObject ironPrefab = null; // Prefab 'Iron'
     public GameObject plantPrefab = null; // Prefab 'Plant'
     public GameObject applePrefab = null; // Prefab 'Apple'
-    protected List<Vector3> respawn_points; // ì¶œí˜„ ì§€ì  List.
+
+    protected List<Vector3> respawn_points; // ÃâÇö ÁöÁ¡ List.
 
     public float step_timer = 0.0f;
-    public static float RESPAWN_TIME_APPLE = 20.0f; // ì‚¬ê³¼ ì¶œí˜„ ì‹œê°„ ìƒìˆ˜.
-    public static float RESPAWN_TIME_IRON = 12.0f; // ì² ê´‘ì„ ì¶œí˜„ ì‹œê°„ ìƒìˆ˜.
-    public static float RESPAWN_TIME_PLANT = 6.0f; // ì‹ë¬¼ ì¶œí˜„ ì‹œê°„ ìƒìˆ˜.
-    private float respawn_timer_apple = 0.0f; // ì‚¬ê³¼ì˜ ì¶œí˜„ ì‹œê°„.
-    private float respawn_timer_iron = 0.0f; // ì² ê´‘ì„ì˜ ì¶œí˜„ ì‹œê°„. 
-    private float respawn_timer_plant = 0.0f; // ì‹ë¬¼ì˜ ì¶œí˜„ ì‹œê°„.
+    public static float RESPAWN_TIME_APPLE = 20.0f; // »ç°ú ÃâÇö ½Ã°£ »ó¼ö.
+    public static float RESPAWN_TIME_IRON = 12.0f; // Ã¶±¤¼® ÃâÇö ½Ã°£ »ó¼ö.
+    public static float RESPAWN_TIME_PLANT = 6.0f; // ½Ä¹° ÃâÇö ½Ã°£ »ó¼ö.
 
-    // ì•„ì´í…œì˜ ì¢…ë¥˜ë¥¼ Item.TYPEí˜•ìœ¼ë¡œ ë°˜í™˜í•˜ëŠ” ë©”ì†Œë“œ.
-    public Item.TYPE getItemType(GameObject item_go)
-    {
-        Item.TYPE type = Item.TYPE.NONE;
-        if (item_go != null)
-        { // ì¸ìˆ˜ë¡œ ë°›ì€ GameObjectê°€ ë¹„ì–´ìˆì§€ ì•Šìœ¼ë©´.
-            switch (item_go.tag)
-            { // íƒœê·¸ë¡œ ë¶„ê¸°.
-                case "Iron": type = Item.TYPE.IRON; break;
-                case "Apple": type = Item.TYPE.APPLE; break;
-                case "Plant": type = Item.TYPE.PLANT; break;
-            }
-        }
-        return (type);
-    }
+    private float respawn_timer_apple = 0.0f; // »ç°úÀÇ ÃâÇö ½Ã°£.
+    private float respawn_timer_iron = 0.0f; // Ã¶±¤¼®ÀÇ ÃâÇö ½Ã°£. 
+    private float respawn_timer_plant = 0.0f; // ½Ä¹°ÀÇ ÃâÇö ½Ã°£.
 
-    public void respawnIron()
-    {
-        // ì² ê´‘ì„ í”„ë¦¬íŒ¹ì„ ì¸ìŠ¤í„´ìŠ¤í™”.
-        GameObject go =
-            GameObject.Instantiate(this.ironPrefab) as GameObject;
-        // ì² ê´‘ì„ì˜ ì¶œí˜„ í¬ì¸íŠ¸ë¥¼ ì·¨ë“.
-        Vector3 pos = GameObject.Find("IronRespawn").transform.position;
-        // ì¶œí˜„ ìœ„ì¹˜ë¥¼ ì¡°ì •.
-        pos.y = 1.0f;
-        pos.x += Random.Range(-1.0f, 1.0f);
-        pos.z += Random.Range(-1.0f, 1.0f);
-        // ì² ê´‘ì„ì˜ ìœ„ì¹˜ë¥¼ ì´ë™.
-        go.transform.position = pos;
-    }
 
-    public void respawnApple()
-    {
-        // ì‚¬ê³¼ í”„ë¦¬íŒ¹ì„ ì¸ìŠ¤í„´ìŠ¤í™”.
-        GameObject go =
-            GameObject.Instantiate(this.applePrefab) as GameObject;
-        // ì‚¬ê³¼ì˜ ì¶œí˜„ í¬ì¸íŠ¸ë¥¼ ì·¨ë“.
-        Vector3 pos = GameObject.Find("AppleRespawn").transform.position;
-        // ì¶œí˜„ ìœ„ì¹˜ë¥¼ ì¡°ì •.
-        pos.y = 1.0f;
-        pos.x += Random.Range(-1.0f, 1.0f);
-        pos.z += Random.Range(-1.0f, 1.0f);
-        // ì‚¬ê³¼ì˜ ìœ„ì¹˜ë¥¼ ì´ë™.
-        go.transform.position = pos;
-    }
 
-    public void respawnPlant()
-    {
-        if (this.respawn_points.Count > 0)
-        { // Listê°€ ë¹„ì–´ìˆì§€ ì•Šìœ¼ë©´.
-            // ì‹ë¬¼ í”„ë¦¬íŒ¹ì„ ì¸ìŠ¤í„´ìŠ¤í™”.
-            GameObject go =
-                GameObject.Instantiate(this.plantPrefab) as GameObject;
-            // ì‹ë¬¼ì˜ ì¶œí˜„ í¬ì¸íŠ¸ë¥¼ ëœë¤í•˜ê²Œ ì·¨ë“.
-            int n = Random.Range(0, this.respawn_points.Count);
-            Vector3 pos = this.respawn_points[n];
-            // ì¶œí˜„ ìœ„ì¹˜ë¥¼ ì¡°ì •.
-            pos.y = 1.0f;
-            pos.x += Random.Range(-1.0f, 1.0f);
-            pos.z += Random.Range(-1.0f, 1.0f);
-            // ì‹ë¬¼ì˜ ìœ„ì¹˜ë¥¼ ì´ë™.
-            go.transform.position = pos;
-        }
-    }
-
-    // Use this for initialization
+    // ÃÊ±âÈ­ ÀÛ¾÷À» ½ÃÇàÇÑ´Ù.
     void Start()
     {
-        // ë©”ëª¨ë¦¬ ì˜ì—­ í™•ë³´.
+        // ¸Ş¸ğ¸® ¿µ¿ª È®º¸.
         this.respawn_points = new List<Vector3>();
-        // "PlantRespawn" íƒœê·¸ê°€ ë¶™ì€ ëª¨ë“  ì˜¤ë¸Œì íŠ¸ë¥¼ ë°°ì—´ì— ì €ì¥.
+        // "PlantRespawn" ÅÂ±×°¡ ºÙÀº ¸ğµç ¿ÀºêÁ§Æ®¸¦ ¹è¿­¿¡ ÀúÀå.
         GameObject[] respawns =
-            GameObject.FindGameObjectsWithTag("PlantRespawn");
-
-        // ë°°ì—´ respawns ë‚´ì˜ ê°œê°œì˜ GameObjectë¥¼ ìˆœì„œë˜ë„ ì²˜ë¦¬í•œë‹¤.
+        GameObject.FindGameObjectsWithTag("PlantRespawn");
+        // ¹è¿­ respawns ³»ÀÇ °³°³ÀÇ GameObject¸¦ ¼ø¼­·¡µµ Ã³¸®ÇÑ´Ù.
         foreach (GameObject go in respawns)
         {
-            // ë Œë”ëŸ¬ íšë“.
+            // ·»´õ·¯ È¹µæ.
             MeshRenderer renderer = go.GetComponentInChildren<MeshRenderer>();
             if (renderer != null)
-            { // ë Œë”ëŸ¬ê°€ ì¡´ì¬í•˜ë©´.
-                renderer.enabled = false; // ê·¸ ë Œë”ëŸ¬ë¥¼ ë³´ì´ì§€ ì•Šê²Œ.
+            { // ·»´õ·¯°¡ Á¸ÀçÇÏ¸é.
+                renderer.enabled = false; // ±× ·»´õ·¯¸¦ º¸ÀÌÁö ¾Ê°Ô.
             }
-
-            // ì¶œí˜„ í¬ì¸íŠ¸ Listì— ìœ„ì¹˜ ì •ë³´ë¥¼ ì¶”ê°€.
+            // ÃâÇö Æ÷ÀÎÆ® List¿¡ À§Ä¡ Á¤º¸¸¦ Ãß°¡.
             this.respawn_points.Add(go.transform.position);
         }
-        // ì‚¬ê³¼ì˜ ì¶œí˜„ í¬ì¸íŠ¸ë¥¼ ì·¨ë“í•˜ê³ , ë Œë”ëŸ¬ë¥¼ ë³´ì´ì§€ ì•Šê²Œ.
+        // »ç°úÀÇ ÃâÇö Æ÷ÀÎÆ®¸¦ ÃëµæÇÏ°í, ·»´õ·¯¸¦ º¸ÀÌÁö ¾Ê°Ô.
         GameObject applerespawn = GameObject.Find("AppleRespawn");
         applerespawn.GetComponent<MeshRenderer>().enabled = false;
-        // ì² ê´‘ì„ì˜ ì¶œí˜„ í¬ì¸íŠ¸ë¥¼ ì·¨ë“í•˜ê³ , ë Œë”ëŸ¬ë¥¼ ë³´ì´ì§€ ì•Šê²Œ.
+        // Ã¶±¤¼®ÀÇ ÃâÇö Æ÷ÀÎÆ®¸¦ ÃëµæÇÏ°í, ·»´õ·¯¸¦ º¸ÀÌÁö ¾Ê°Ô.
         GameObject ironrespawn = GameObject.Find("IronRespawn");
         ironrespawn.GetComponent<MeshRenderer>().enabled = false;
 
-        this.respawnIron(); // ì² ê´‘ì„ì„ í•˜ë‚˜ ìƒì„±.
-        this.respawnPlant(); // ì‹ë¬¼ì„ í•˜ë‚˜ ìƒì„±.
+        this.respawnIron();
+        this.respawnPlant();
+
+        this.respawnPlant();
+        this.respawnPlant();
     }
 
-    // Update is called once per frame
+    // °¢ ¾ÆÀÌÅÛÀÇ Å¸ÀÌ¸Ó °ªÀÌ ÃâÇö ½Ã°£À» ÃÊ°úÇÏ¸é ÇØ´ç ¾ÆÀÌÅÛÀ» ÃâÇö.
     void Update()
     {
         respawn_timer_apple += Time.deltaTime;
@@ -137,18 +73,148 @@ public class ItemRoot : MonoBehaviour
         if (respawn_timer_apple > RESPAWN_TIME_APPLE)
         {
             respawn_timer_apple = 0.0f;
-            this.respawnApple(); // ì‚¬ê³¼ë¥¼ ì¶œí˜„ì‹œí‚¨ë‹¤.
+            this.respawnApple(); // »ç°ú¸¦ ÃâÇö½ÃÅ²´Ù.
         }
         if (respawn_timer_iron > RESPAWN_TIME_IRON)
         {
             respawn_timer_iron = 0.0f;
-            this.respawnIron(); // ì² ê´‘ì„ì„ ì¶œí˜„ì‹œí‚¨ë‹¤.
-
+            this.respawnIron(); // Ã¶±¤¼®À» ÃâÇö½ÃÅ²´Ù.
         }
         if (respawn_timer_plant > RESPAWN_TIME_PLANT)
         {
             respawn_timer_plant = 0.0f;
-            this.respawnPlant(); // ì‹ë¬¼ì„ ì¶œí˜„ì‹œí‚¨ë‹¤.
+            this.respawnPlant(); // ½Ä¹°À» ÃâÇö½ÃÅ²´Ù.
         }
+    }
+
+    // ¾ÆÀÌÅÛÀÇ Á¾·ù¸¦ Item.TYPEÇüÀ¸·Î ¹İÈ¯ÇÏ´Â ¸Ş¼Òµå.
+    public Item.TYPE getItemType(GameObject item_go)
+    {
+        Item.TYPE type = Item.TYPE.NONE;
+        if (item_go != null)
+        { // ÀÎ¼ö·Î ¹ŞÀº GameObject°¡ ºñ¾îÀÖÁö ¾ÊÀ¸¸é.
+            switch (item_go.tag)
+            { // ÅÂ±×·Î ºĞ±â.
+                case "Iron": type = Item.TYPE.IRON; break;
+                case "Apple": type = Item.TYPE.APPLE; break;
+                case "Plant": type = Item.TYPE.PLANT; break;
+            }
+        }
+        return (type);
+    }
+
+    // Ã¶±¤¼®À» ÃâÇö½ÃÅ²´Ù.
+    public void respawnIron()
+    {
+        // Ã¶±¤¼® ÇÁ¸®ÆÕÀ» ÀÎ½ºÅÏ½ºÈ­.
+        GameObject go = GameObject.Instantiate(this.ironPrefab) as GameObject;
+        // Ã¶±¤¼®ÀÇ ÃâÇö Æ÷ÀÎÆ®¸¦ Ãëµæ.
+        Vector3 pos = GameObject.Find("IronRespawn").transform.position;
+        // ÃâÇö À§Ä¡¸¦ Á¶Á¤.
+        pos.y = 1.0f;
+        pos.x += Random.Range(-1.0f, 1.0f);
+        pos.z += Random.Range(-1.0f, 1.0f);
+        // Ã¶±¤¼®ÀÇ À§Ä¡¸¦ ÀÌµ¿.
+        go.transform.position = pos;
+    }
+
+    // »ç°ú¸¦ ÃâÇö½ÃÅ²´Ù.
+    public void respawnApple()
+    {
+        // »ç°ú ÇÁ¸®ÆÕÀ» ÀÎ½ºÅÏ½ºÈ­.
+        GameObject go = GameObject.Instantiate(this.applePrefab) as GameObject;
+        // »ç°úÀÇ ÃâÇö Æ÷ÀÎÆ®¸¦ Ãëµæ.
+        Vector3 pos = GameObject.Find("AppleRespawn").transform.position;
+        // ÃâÇö À§Ä¡¸¦ Á¶Á¤.
+        pos.y = 1.0f;
+        pos.x += Random.Range(-1.0f, 1.0f);
+        pos.z += Random.Range(-1.0f, 1.0f);
+        // »ç°úÀÇ À§Ä¡¸¦ ÀÌµ¿.
+        go.transform.position = pos;
+    }
+
+    // ½Ä¹°À» ÃâÇö½ÃÅ²´Ù.
+    public void respawnPlant()
+    {
+        if (this.respawn_points.Count > 0)
+        { // List°¡ ºñ¾îÀÖÁö ¾ÊÀ¸¸é.
+          // ½Ä¹° ÇÁ¸®ÆÕÀ» ÀÎ½ºÅÏ½ºÈ­.
+            GameObject go = GameObject.Instantiate(this.plantPrefab) as GameObject;
+            // ½Ä¹°ÀÇ ÃâÇö Æ÷ÀÎÆ®¸¦ ·£´ıÇÏ°Ô Ãëµæ.
+            int n = Random.Range(0, this.respawn_points.Count);
+            Vector3 pos = this.respawn_points[n];
+            // ÃâÇö À§Ä¡¸¦ Á¶Á¤.
+            pos.y = 1.0f;
+            pos.x += Random.Range(-1.0f, 1.0f);
+            pos.z += Random.Range(-1.0f, 1.0f);
+            // ½Ä¹°ÀÇ À§Ä¡¸¦ ÀÌµ¿.
+            go.transform.position = pos;
+        }
+    }
+
+    // µé°í ÀÖ´Â ¾ÆÀÌÅÛ¿¡ µû¸¥ ¡®¼ö¸® ÁøÃ´ »óÅÂ¡¯¸¦ ¹İÈ¯
+    public float getGainRepairment(GameObject item_go)
+    {
+        float gain = 0.0f;
+        if (item_go == null)
+        {
+            gain = 0.0f;
+        }
+        else
+        {
+            Item.TYPE type = this.getItemType(item_go);
+            switch (type)
+            { // µé°í ÀÖ´Â ¾ÆÀÌÅÛÀÇ Á¾·ù·Î °¥¶óÁø´Ù.
+                case Item.TYPE.IRON:
+                    gain = GameStatus.GAIN_REPAIRMENT_IRON; break;
+                case Item.TYPE.PLANT:
+                    gain = GameStatus.GAIN_REPAIRMENT_PLANT; break;
+            }
+        }
+        return (gain);
+    }
+    // µé°í ÀÖ´Â ¾ÆÀÌÅÛ¿¡ µû¸¥ ¡®Ã¼·Â °¨¼Ò »óÅÂ¡¯¸¦ ¹İÈ¯
+    public float getConsumeSatiety(GameObject item_go)
+    {
+        float consume = 0.0f;
+        if (item_go == null)
+        {
+            consume = 0.0f;
+        }
+        else
+        {
+            Item.TYPE type = this.getItemType(item_go);
+            switch (type)
+            { // µé°í ÀÖ´Â ¾ÆÀÌÅÛÀÇ Á¾·ù·Î °¥¶óÁø´Ù.
+                case Item.TYPE.IRON:
+                    consume = GameStatus.CONSUME_SATIETY_IRON; break;
+                case Item.TYPE.APPLE:
+                    consume = GameStatus.CONSUME_SATIETY_APPLE; break;
+                case Item.TYPE.PLANT:
+                    consume = GameStatus.CONSUME_SATIETY_PLANT; break;
+            }
+        }
+        return (consume);
+    }
+    // µé°í ÀÖ´Â ¾ÆÀÌÅÛ¿¡ µû¸¥ ¡®Ã¼·Â È¸º¹ »óÅÂ¡¯¸¦ ¹İÈ¯
+    public float getRegainSatiety(GameObject item_go)
+    {
+        float regain = 0.0f;
+        if (item_go == null)
+        {
+            regain = 0.0f;
+        }
+        else
+        {
+            Item.TYPE type = this.getItemType(item_go);
+            switch (type)
+            { // µé°í ÀÖ´Â ¾ÆÀÌÅÛÀÇ Á¾·ù·Î °¥¶óÁø´Ù.
+                case Item.TYPE.APPLE:
+                    regain = GameStatus.REGAIN_SATIETY_APPLE; break;
+                case Item.TYPE.PLANT:
+                    regain = GameStatus.REGAIN_SATIETY_PLANT; break;
+            }
+        }
+        return (regain);
     }
 }
