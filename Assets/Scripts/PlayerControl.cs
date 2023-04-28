@@ -177,7 +177,7 @@ public class PlayerControl : MonoBehaviour
             case STEP.MOVE:
                 this.move_control();
                 this.pick_or_drop_control(); 
-                this.game_status.alwaysSatiety();  // 이동 가능한 경우는 항상 배가 고파진다.
+                //this.game_status.alwaysSatiety();  // 이동 가능한 경우는 항상 배가 고파진다.
                 break;
             case STEP.REPAIRING:
                 // 우주선을 회전시킨다.
@@ -359,57 +359,7 @@ public class PlayerControl : MonoBehaviour
             }
         }
     */
-    void OnGUI()
-    {
-        float x = 20.0f;
-        float y = Screen.height - 40.0f;
 
-        if (this.carried_item != null)
-        {
-            GUI.Label(new Rect(x, y, 200.0f, 20.0f), "Z:버린다", guistyle);
-            do
-            {
-                if (this.is_event_ignitable())
-                {
-                    break;
-                }
-                if (item_root.getItemType(this.carried_item) == Item.TYPE.IRON)
-                {
-                    break;
-                }
-                GUI.Label(new Rect(x + 100.0f, y, 200.0f, 20.0f),
-                          "x:먹는다", guistyle);
-            } while (false);
-        }
-        else
-        {
-            if (this.closest_item != null)
-            {
-                GUI.Label(new Rect(x, y, 200.0f, 20.0f), "Z:줍는다", guistyle);
-            }
-        }
-
-        switch (this.step)
-        {
-            case STEP.EATING:
-                GUI.Label(new Rect(x, y, 200.0f, 20.0f),
-                          "우걱우걱우물우물……", guistyle);
-                break;
-            case STEP.REPAIRING:
-                GUI.Label(new Rect(x + 200.0f, y, 200.0f, 20.0f),
-                          "수리중", guistyle);
-                break;
-        }
-
-        if (this.is_event_ignitable())
-        { // 이벤트가 시작 가능한 경우.
-            // 이벤트용 메시지를 취득.
-            string message =
-                this.event_root.getIgnitableMessage(this.closest_event);
-            GUI.Label(new Rect(x + 200.0f, y, 200.0f, 20.0f),
-                      "X:" + message, guistyle);
-        }
-    }
 
     private void pick_or_drop_control()
     {
@@ -491,6 +441,54 @@ public class PlayerControl : MonoBehaviour
             ret = true; // 여기까지 오면 이벤트를 시작할 수 있다고 판정!.
         } while (false);
         return (ret);
+    }
+
+    void OnGUI()
+    {
+        float x = 20.0f;
+        float y = Screen.height - 40.0f;
+
+        if (this.carried_item != null)
+        {
+            GUI.Label(new Rect(x, y, 200.0f, 20.0f), "Z:버린다", guistyle);
+            do
+            {
+                if (this.is_event_ignitable())
+                {
+                    break;
+                }
+                if (item_root.getItemType(this.carried_item) == Item.TYPE.IRON)
+                {
+                    break;
+                }
+                GUI.Label(new Rect(x + 100.0f, y, 200.0f, 20.0f), "x:먹는다", guistyle);
+            } while (false);
+        }
+        else
+        {
+            if (this.closest_item != null)
+            {
+                GUI.Label(new Rect(x, y, 200.0f, 20.0f), "Z:줍는다", guistyle);
+            }
+        }
+
+        switch (this.step)
+        {
+            case STEP.EATING:
+                GUI.Label(new Rect(Screen.width / 2 - 80.0f, y, 200.0f, 20.0f), "우걱우걱우물우물……", guistyle);
+                break;
+            case STEP.REPAIRING:
+                GUI.Label(new Rect(Screen.width / 2 - 20.0f, y, 200.0f, 20.0f), "수리중", guistyle);
+                break;
+        }
+        Debug.Log(this.is_event_ignitable());
+
+        if (this.is_event_ignitable())
+        { // 이벤트가 시작 가능한 경우.
+            // 이벤트용 메시지를 취득.
+            string message = this.event_root.getIgnitableMessage(this.closest_event);
+            GUI.Label(new Rect(x + 200.0f, y, 200.0f, 20.0f), "X:" + message, guistyle);
+        }
     }
 
 }

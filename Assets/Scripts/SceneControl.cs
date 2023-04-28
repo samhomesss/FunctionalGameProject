@@ -49,16 +49,16 @@ public class SceneControl : MonoBehaviour
                         // 클리어 상태로 이동.
                         this.next_step = STEP.CLEAR;
                     }
-                    if (this.game_status.isGameOver())
-                    {
-                        // 게임 오버 상태로 이동.
-                        this.next_step = STEP.GAMEOVER;
-                    }
-                    if (this.step_timer > GAME_OVER_TIME)
-                    {
-                        // 제한 시간을 넘었으면 게임 오버.
-                        this.next_step = STEP.GAMEOVER;
-                    }
+                    //if (this.game_status.isGameOver())
+                    //{
+                    //    // 게임 오버 상태로 이동.
+                    //    this.next_step = STEP.GAMEOVER;
+                    //}
+                    //if (this.step_timer > GAME_OVER_TIME)
+                    //{
+                    //    // 제한 시간을 넘었으면 게임 오버.
+                    //    this.next_step = STEP.GAMEOVER;
+                    //}
                     break;
                 // 클리어 시 및 게임 오버 시의 처리.
                 case STEP.CLEAR:
