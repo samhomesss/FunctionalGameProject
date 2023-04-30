@@ -11,6 +11,8 @@ TagManager:
   - Rocket
   - Tree
   - Rock
+  - Lumber
+  - Bonfire
   layers:
   - Default
   - TransparentFX

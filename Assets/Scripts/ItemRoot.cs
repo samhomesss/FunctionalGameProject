@@ -6,7 +6,7 @@ public class Item
 {
     public enum TYPE
     { // 아이템 종류.
-        NONE = -1, IRON = 0, APPLE, PLANT, TREE, ROCK,  // 없음, 철광석, 사과, 식물, 나무, 돌맹이
+        NONE = -1, IRON = 0, APPLE, PLANT, LUMBER, ROCK,  // 없음, 철광석, 사과, 식물, 나무, 돌맹이
         NUM,
     }; // 아이템이 몇 종류인가 나타낸다(=3).
 };
@@ -16,7 +16,6 @@ public class ItemRoot : MonoBehaviour
     public GameObject RockPrefab = null; // Prefab 'ROCK'
     public GameObject plantPrefab = null; // Prefab 'Plant'
     public GameObject applePrefab = null; // Prefab 'Apple'
-    public GameObject fire = null;
 
     GameObject applerespawn;
 
@@ -31,7 +30,7 @@ public class ItemRoot : MonoBehaviour
     private float respawn_timer_rock = 0.0f; // 철광석의 출현 시간. 
     private float respawn_timer_plant = 0.0f; // 식물의 출현 시간.
 
-    float fireHp = 15;
+    
 
     // 초기화 작업을 시행한다.
     void Start()
@@ -39,9 +38,8 @@ public class ItemRoot : MonoBehaviour
         // 메모리 영역 확보.
         this.respawn_points = new List<Vector3>();
         // "PlantRespawn" 태그가 붙은 모든 오브젝트를 배열에 저장.
-        GameObject[] respawns =
-        GameObject.FindGameObjectsWithTag("PlantRespawn");
-        fire = GameObject.Find("Fire");
+        GameObject[] respawns = GameObject.FindGameObjectsWithTag("PlantRespawn");
+       
         // 배열 respawns 내의 개개의 GameObject를 순서래도 처리한다.
         foreach (GameObject go in respawns)
         {
@@ -90,7 +88,7 @@ public class ItemRoot : MonoBehaviour
             this.respawnPlant(); // 식물을 출현시킨다.
         }
 
-        regulateFire();
+       
     }
 
     // 아이템의 종류를 Item.TYPE형으로 반환하는 메소드.
@@ -104,6 +102,8 @@ public class ItemRoot : MonoBehaviour
                 case "Rock": type = Item.TYPE.ROCK; break;
                 case "Apple": type = Item.TYPE.APPLE; break;
                 case "Plant": type = Item.TYPE.PLANT; break;
+                case "Iron": type = Item.TYPE.IRON; break;
+                case "Lumber": type = Item.TYPE.LUMBER; break;
             }
         }
         return (type);
@@ -227,11 +227,24 @@ public class ItemRoot : MonoBehaviour
         return (regain);
     }
 
-    public void regulateFire()
+    public float getRegainTemperature(GameObject item_go)
     {
-        var emission = fire.transform.GetChild(0).GetComponent<ParticleSystem>().emission;
-
-        fireHp -= 0.8f * Time.deltaTime;
-        emission.rateOverTime = fireHp;
+        float regain = 0.0f;
+        if (item_go == null)
+        {
+            regain = 0.0f;
+        }
+        else
+        {
+            Item.TYPE type = this.getItemType(item_go);
+            switch (type)
+            { // 들고 있는 아이템의 종류로 갈라진다.
+                case Item.TYPE.APPLE:
+                    regain = GameStatus.REGAIN_TEMPERATURE_APPLE; break;
+                case Item.TYPE.PLANT:
+                    regain = GameStatus.REGAIN_TEMPERATURE_PLANT; break;
+            }
+        }
+        return (regain);
     }
 }

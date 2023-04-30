@@ -10,6 +10,7 @@ public class Event
     {
         NONE = -1, // 없음.
         ROCKET = 0, // 우주선 수리.
+        BONFIRE,
         NUM, // 이벤트가 몇 종류 있는지 나타낸다(=1).
     };
 };
@@ -23,6 +24,10 @@ public class EventRoot : MonoBehaviour
             if (event_go.tag == "Rocket")
             {
                 type = Event.TYPE.ROCKET;
+            }
+            else if(event_go.tag == "Bonfire")
+            {
+                type = Event.TYPE.BONFIRE;
             }
         }
         return (type);
@@ -45,10 +50,17 @@ public class EventRoot : MonoBehaviour
                 {
                     ret = true; // '이벤트할 수 있어요！'라고 응답한다.
                 }
-                // 가지고 있는 것이 식물이라면.
-                if (carried_item == Item.TYPE.PLANT)
+         
+                break;
+
+            case Event.TYPE.BONFIRE:
+                if(carried_item == Item.TYPE.APPLE)
                 {
-                    ret = true; // '이벤트할 수 있어요！'라고 응답한다.
+                    ret = true;
+                }
+                if(carried_item == Item.TYPE.PLANT)
+                {
+                    ret = true;
                 }
                 break;
         }
@@ -67,6 +79,9 @@ public class EventRoot : MonoBehaviour
         {
             case Event.TYPE.ROCKET:
                 message = "수리한다";
+                break;
+            case Event.TYPE.BONFIRE:
+                message = "불을 살린다";
                 break;
         }
         return (message);

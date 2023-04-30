@@ -14,6 +14,7 @@ public class PlayerControl : MonoBehaviour
         public bool left; // ←.
         public bool pick; // 줍는다／버린다.
         public bool action; // 먹는다 / 수리한다.
+        public bool action2;  // 불을 살린다.
     };
 
     private Key key; // 키 조작 정보를 보관하는 변수.
@@ -24,6 +25,7 @@ public class PlayerControl : MonoBehaviour
         MOVE = 0, // 이동 중.
         REPAIRING, // 수리 중.
         EATING, // 식사 중.
+        MAKINGFIRE,
         NUM, // 상태가 몇 종류 있는지 나타낸다(=3).
     };
 
@@ -39,9 +41,10 @@ public class PlayerControl : MonoBehaviour
     private GameObject closest_event = null;// 주목하고 있는 이벤트를 저장.
     private EventRoot event_root = null;    // EventRoot 클래스를 사용하기 위한 변수.
     private GameObject rocket_model = null; // 우주선의 모델을 사용하기 위한 변수.
+    private GameObject bonfire = null; // 모닥불의 모델을 사용하기 위한 변수.
 
     private GameStatus game_status = null;
-
+    public float bonfireDistance;
     // Use this for initialization
     void Start()
     {
@@ -54,6 +57,8 @@ public class PlayerControl : MonoBehaviour
         this.event_root = GameObject.Find("GameRoot").GetComponent<EventRoot>();
         this.rocket_model = GameObject.Find("rocket").transform.Find("rocket_model").gameObject;
         this.game_status = GameObject.Find("GameRoot").GetComponent<GameStatus>();
+        this.bonfire = GameObject.Find("Bonfire");
+        
     }
 
     // Update is called once per frame
@@ -64,6 +69,7 @@ public class PlayerControl : MonoBehaviour
         this.step_timer += Time.deltaTime;
         float eat_time = 0.5f; // 사과는 2초에 걸쳐 먹는다.
         float repair_time = 0.5f; // 수리에 걸리는 시간도 2초.
+        float makeFire_time = 0.5f; // 땔감 넣는 시간도 2초.
 
         // 상태를 변화시킨다---------------------.
         if (this.next_step == STEP.NONE)
@@ -73,11 +79,12 @@ public class PlayerControl : MonoBehaviour
                 case STEP.MOVE: // '이동 중' 상태의 처리.
                     do
                     {
-                        if (!this.key.action)
+                        if (!this.key.action && !this.key.action2)
                         { // 액션 키가 눌려있지 않다.
                             break; // 루프 탈출.
                         }
 
+                
                         // 주목하는 이벤트가 있을 때.
                         if (this.closest_event != null)
                         {
@@ -86,14 +93,19 @@ public class PlayerControl : MonoBehaviour
                                 break; // 아무 것도 하지 않는다.
                             }
                             // 이벤트 종류를 가져온다.
-                            Event.TYPE ignitable_event =
-                                this.event_root.getEventType(this.closest_event);
+                            Event.TYPE ignitable_event = this.event_root.getEventType(this.closest_event);
                             switch (ignitable_event)
                             {
                                 case Event.TYPE.ROCKET:
                                     // 이벤트의 종류가 ROCKET이면.
                                     // REPAIRING(수리) 상태로 이행.
+                                    if (!this.key.action && this.key.action2) break; // 루프 탈출.
                                     this.next_step = STEP.REPAIRING;
+
+                                    break;
+                                case Event.TYPE.BONFIRE:
+                                    if (this.key.action && !this.key.action2) break; // 루프 탈출.
+                                    this.next_step = STEP.MAKINGFIRE;
                                     break;
                             }
                             break;
@@ -102,14 +114,14 @@ public class PlayerControl : MonoBehaviour
                         if (this.carried_item != null)
                         {
                             // 가지고 있는 아이템 판별.
-                            Item.TYPE carried_item_type =
-                                this.item_root.getItemType(this.carried_item);
+                            Item.TYPE carried_item_type = this.item_root.getItemType(this.carried_item);
 
                             switch (carried_item_type)
                             {
                                 case Item.TYPE.APPLE: // 사과라면.
                                 case Item.TYPE.PLANT: // 식물이라면.
                                     // '식사 중' 상태로 이행.
+                                    if (!this.key.action && this.key.action2) break; // 루프 탈출.
                                     this.next_step = STEP.EATING;
                                     break;
                             }
@@ -130,6 +142,13 @@ public class PlayerControl : MonoBehaviour
                         this.next_step = STEP.MOVE; // '이동' 상태로 이행.
                     }
                     break;
+                case STEP.MAKINGFIRE: // 불 살리는중 
+                    if (this.step_timer > makeFire_time)
+                    { // 2초 대기.
+                        this.next_step = STEP.MOVE; // '이동' 상태로 이행.
+                    }
+                    break;
+
             }
         }
 
@@ -167,6 +186,18 @@ public class PlayerControl : MonoBehaviour
                         this.closest_item = null;
                     }
                     break;
+                case STEP.MAKINGFIRE:  // 땔감 넣는중이면.
+                    if (this.carried_item != null)
+                    {
+                        // 들고 있는 아이템의 '수리 진척 상태'를 가져와서 설정.
+                        this.game_status.addTemperature(this.item_root.getRegainTemperature(this.carried_item));
+
+                        // 가지고 있는 아이템 삭제.
+                        GameObject.Destroy(this.carried_item);
+                        this.carried_item = null;
+                        this.closest_item = null;
+                    }
+                    break;
             }
             this.step_timer = 0.0f;
         }
@@ -177,13 +208,17 @@ public class PlayerControl : MonoBehaviour
             case STEP.MOVE:
                 this.move_control();
                 this.pick_or_drop_control(); 
-                //this.game_status.alwaysSatiety();  // 이동 가능한 경우는 항상 배가 고파진다.
+                this.game_status.alwaysSatiety();  // 이동 가능한 경우는 항상 배가 고파진다.
+                this.game_status.alwaysBodyTemperature();
+                this.bonfireDIstane();
                 break;
             case STEP.REPAIRING:
                 // 우주선을 회전시킨다.
                 this.rocket_model.transform.localRotation *= Quaternion.AngleAxis(360.0f / 10.0f * Time.deltaTime, Vector3.up);
                 break;
         }
+
+        
     }
 
     private void get_input()
@@ -208,6 +243,8 @@ public class PlayerControl : MonoBehaviour
         this.key.pick = Input.GetKeyDown(KeyCode.Z);
         // X 키가 눌렸으면 true를 대입.
         this.key.action = Input.GetKeyDown(KeyCode.X);
+        // C 키가 눌렸으면 true를 대입.
+        this.key.action2 = Input.GetKeyDown(KeyCode.C);
     }
 
     private void move_control()
@@ -278,8 +315,7 @@ public class PlayerControl : MonoBehaviour
     void OnTriggerStay(Collider other)
     {
         GameObject other_go = other.gameObject;
-
-
+               
         // 트리거의 GameObject 레이어 설정이 Item이라면.
         if (other_go.layer == LayerMask.NameToLayer("Item"))
         {
@@ -400,10 +436,8 @@ public class PlayerControl : MonoBehaviour
         bool ret = false;
         do
         {
-            Vector3 heading = // 자신이 현재 향하고 있는 방향을 보관.
-                this.transform.TransformDirection(Vector3.forward);
-            Vector3 to_other = // 자신 쪽에서 본 아이템의 방향을 보관.
-                other.transform.position - this.transform.position;
+            Vector3 heading =  this.transform.TransformDirection(Vector3.forward);  // 자신이 현재 향하고 있는 방향을 보관.
+            Vector3 to_other = other.transform.position - this.transform.position;  // 자신 쪽에서 본 아이템의 방향을 보관.
             heading.y = 0.0f;
             to_other.y = 0.0f;
             heading.Normalize(); // 길이를 1로 하고 방향만 벡터로.
@@ -429,8 +463,7 @@ public class PlayerControl : MonoBehaviour
             }
 
             // 들고 있는 아이템 종류를 가져온다.
-            Item.TYPE carried_item_type =
-                this.item_root.getItemType(this.carried_item);
+            Item.TYPE carried_item_type = this.item_root.getItemType(this.carried_item);
 
             // 들고 있는 아이템 종류와 주목하는 이벤트의 종류에서.
             // 이벤트가 가능한지 판정하고, 이벤트 불가라면 false를 반환한다.
@@ -480,6 +513,9 @@ public class PlayerControl : MonoBehaviour
             case STEP.REPAIRING:
                 GUI.Label(new Rect(Screen.width / 2 - 20.0f, y, 200.0f, 20.0f), "수리중", guistyle);
                 break;
+            case STEP.MAKINGFIRE:
+                GUI.Label(new Rect(Screen.width / 2 - 50.0f, y, 200.0f, 20.0f), "땔감넣는중...", guistyle);
+                break;
         }
         Debug.Log(this.is_event_ignitable());
 
@@ -487,8 +523,17 @@ public class PlayerControl : MonoBehaviour
         { // 이벤트가 시작 가능한 경우.
             // 이벤트용 메시지를 취득.
             string message = this.event_root.getIgnitableMessage(this.closest_event);
-            GUI.Label(new Rect(x + 200.0f, y, 200.0f, 20.0f), "X:" + message, guistyle);
+            if(message == "수리한다")
+                GUI.Label(new Rect(x + 200.0f, y, 200.0f, 20.0f), "X:" + message, guistyle);
+            if(message == "불을 살린다")
+                GUI.Label(new Rect(x + 200.0f, y, 200.0f, 20.0f), "C:" + message, guistyle);
         }
     }
 
+    private void bonfireDIstane()
+    {
+        bonfireDistance = Vector3.Distance(transform.position, bonfire.transform.position);
+        float temperature = game_status.GetTemperature();
+        if (bonfireDistance < 5.0f && temperature > 0) game_status.addBodyTemperature();
+    }
 }
