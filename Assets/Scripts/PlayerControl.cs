@@ -457,7 +457,7 @@ public class PlayerControl : MonoBehaviour
                 {
                     break;
                 }
-                if (item_root.getItemType(this.carried_item) == Item.TYPE.IRON)
+                if (item_root.getItemType(this.carried_item) == Item.TYPE.ROCK)
                 {
                     break;
                 }

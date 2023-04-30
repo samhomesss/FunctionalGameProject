@@ -6,29 +6,32 @@ public class Item
 {
     public enum TYPE
     { // 아이템 종류.
-        NONE = -1, IRON = 0, APPLE, PLANT, // 없음, 철광석, 사과, 식물.
+        NONE = -1, IRON = 0, APPLE, PLANT, TREE, ROCK,  // 없음, 철광석, 사과, 식물, 나무, 돌맹이
         NUM,
     }; // 아이템이 몇 종류인가 나타낸다(=3).
 };
 
 public class ItemRoot : MonoBehaviour
 {
-    public GameObject ironPrefab = null; // Prefab 'Iron'
+    public GameObject RockPrefab = null; // Prefab 'ROCK'
     public GameObject plantPrefab = null; // Prefab 'Plant'
     public GameObject applePrefab = null; // Prefab 'Apple'
+    public GameObject fire = null;
+
+    GameObject applerespawn;
 
     protected List<Vector3> respawn_points; // 출현 지점 List.
 
     public float step_timer = 0.0f;
-    public static float RESPAWN_TIME_APPLE = 20.0f; // 사과 출현 시간 상수.
-    public static float RESPAWN_TIME_IRON = 12.0f; // 철광석 출현 시간 상수.
+    public static float RESPAWN_TIME_APPLE = 5.0f; // 사과 출현 시간 상수.
+    public static float RESPAWN_TIME_ROCK = 12.0f; // 철광석 출현 시간 상수.
     public static float RESPAWN_TIME_PLANT = 6.0f; // 식물 출현 시간 상수.
 
     private float respawn_timer_apple = 0.0f; // 사과의 출현 시간.
-    private float respawn_timer_iron = 0.0f; // 철광석의 출현 시간. 
+    private float respawn_timer_rock = 0.0f; // 철광석의 출현 시간. 
     private float respawn_timer_plant = 0.0f; // 식물의 출현 시간.
 
-
+    float fireHp = 15;
 
     // 초기화 작업을 시행한다.
     void Start()
@@ -38,6 +41,7 @@ public class ItemRoot : MonoBehaviour
         // "PlantRespawn" 태그가 붙은 모든 오브젝트를 배열에 저장.
         GameObject[] respawns =
         GameObject.FindGameObjectsWithTag("PlantRespawn");
+        fire = GameObject.Find("Fire");
         // 배열 respawns 내의 개개의 GameObject를 순서래도 처리한다.
         foreach (GameObject go in respawns)
         {
@@ -51,13 +55,13 @@ public class ItemRoot : MonoBehaviour
             this.respawn_points.Add(go.transform.position);
         }
         // 사과의 출현 포인트를 취득하고, 렌더러를 보이지 않게.
-        GameObject applerespawn = GameObject.Find("AppleRespawn");
-        applerespawn.GetComponent<MeshRenderer>().enabled = false;
+        applerespawn = GameObject.Find("Tree");
+        //applerespawn.GetComponent<MeshRenderer>().enabled = false;
         // 철광석의 출현 포인트를 취득하고, 렌더러를 보이지 않게.
-        GameObject ironrespawn = GameObject.Find("IronRespawn");
-        ironrespawn.GetComponent<MeshRenderer>().enabled = false;
+        GameObject rockrespawn = GameObject.Find("RockRespawn");
+        rockrespawn.GetComponent<MeshRenderer>().enabled = false;
 
-        this.respawnIron();
+        this.respawnRock();
         this.respawnPlant();
 
         this.respawnPlant();
@@ -68,23 +72,25 @@ public class ItemRoot : MonoBehaviour
     void Update()
     {
         respawn_timer_apple += Time.deltaTime;
-        respawn_timer_iron += Time.deltaTime;
+        respawn_timer_rock += Time.deltaTime;
         respawn_timer_plant += Time.deltaTime;
-        if (respawn_timer_apple > RESPAWN_TIME_APPLE)
+        if (respawn_timer_apple > RESPAWN_TIME_APPLE  && applerespawn.transform.GetChild(1).transform.childCount < 8)
         {
             respawn_timer_apple = 0.0f;
             this.respawnApple(); // 사과를 출현시킨다.
         }
-        if (respawn_timer_iron > RESPAWN_TIME_IRON)
+        if (respawn_timer_rock > RESPAWN_TIME_ROCK)
         {
-            respawn_timer_iron = 0.0f;
-            this.respawnIron(); // 철광석을 출현시킨다.
+            respawn_timer_rock = 0.0f;
+            this.respawnRock(); // 철광석을 출현시킨다.
         }
         if (respawn_timer_plant > RESPAWN_TIME_PLANT)
         {
             respawn_timer_plant = 0.0f;
             this.respawnPlant(); // 식물을 출현시킨다.
         }
+
+        regulateFire();
     }
 
     // 아이템의 종류를 Item.TYPE형으로 반환하는 메소드.
@@ -95,7 +101,7 @@ public class ItemRoot : MonoBehaviour
         { // 인수로 받은 GameObject가 비어있지 않으면.
             switch (item_go.tag)
             { // 태그로 분기.
-                case "Iron": type = Item.TYPE.IRON; break;
+                case "Rock": type = Item.TYPE.ROCK; break;
                 case "Apple": type = Item.TYPE.APPLE; break;
                 case "Plant": type = Item.TYPE.PLANT; break;
             }
@@ -104,12 +110,12 @@ public class ItemRoot : MonoBehaviour
     }
 
     // 철광석을 출현시킨다.
-    public void respawnIron()
+    public void respawnRock()
     {
         // 철광석 프리팹을 인스턴스화.
-        GameObject go = GameObject.Instantiate(this.ironPrefab) as GameObject;
+        GameObject go = GameObject.Instantiate(this.RockPrefab) as GameObject;
         // 철광석의 출현 포인트를 취득.
-        Vector3 pos = GameObject.Find("IronRespawn").transform.position;
+        Vector3 pos = GameObject.Find("RockRespawn").transform.position;
         // 출현 위치를 조정.
         pos.y = 1.0f;
         pos.x += Random.Range(-1.0f, 1.0f);
@@ -124,13 +130,16 @@ public class ItemRoot : MonoBehaviour
         // 사과 프리팹을 인스턴스화.
         GameObject go = GameObject.Instantiate(this.applePrefab) as GameObject;
         // 사과의 출현 포인트를 취득.
-        Vector3 pos = GameObject.Find("AppleRespawn").transform.position;
+        Vector3 pos = GameObject.Find("Tree").transform.position;
         // 출현 위치를 조정.
-        pos.y = 1.0f;
-        pos.x += Random.Range(-1.0f, 1.0f);
-        pos.z += Random.Range(-1.0f, 1.0f);
+        pos.y = 0.5f;
+        float radius = applerespawn.GetComponent<SphereCollider>().radius;
+        pos.x += Random.Range(-radius, radius);
+        pos.z += Random.Range(-radius, radius);
         // 사과의 위치를 이동.
         go.transform.position = pos;
+        go.gameObject.name = applePrefab.name;
+        go.transform.SetParent(applerespawn.transform.GetChild(1));
     }
 
     // 식물을 출현시킨다.
@@ -165,8 +174,8 @@ public class ItemRoot : MonoBehaviour
             Item.TYPE type = this.getItemType(item_go);
             switch (type)
             { // 들고 있는 아이템의 종류로 갈라진다.
-                case Item.TYPE.IRON:
-                    gain = GameStatus.GAIN_REPAIRMENT_IRON; break;
+                case Item.TYPE.ROCK:
+                    gain = GameStatus.GAIN_REPAIRMENT_ROCK; break;
                 case Item.TYPE.PLANT:
                     gain = GameStatus.GAIN_REPAIRMENT_PLANT; break;
             }
@@ -186,8 +195,8 @@ public class ItemRoot : MonoBehaviour
             Item.TYPE type = this.getItemType(item_go);
             switch (type)
             { // 들고 있는 아이템의 종류로 갈라진다.
-                case Item.TYPE.IRON:
-                    consume = GameStatus.CONSUME_SATIETY_IRON; break;
+                case Item.TYPE.ROCK:
+                    consume = GameStatus.CONSUME_SATIETY_ROCK; break;
                 case Item.TYPE.APPLE:
                     consume = GameStatus.CONSUME_SATIETY_APPLE; break;
                 case Item.TYPE.PLANT:
@@ -216,5 +225,13 @@ public class ItemRoot : MonoBehaviour
             }
         }
         return (regain);
+    }
+
+    public void regulateFire()
+    {
+        var emission = fire.transform.GetChild(0).GetComponent<ParticleSystem>().emission;
+
+        fireHp -= 0.8f * Time.deltaTime;
+        emission.rateOverTime = fireHp;
     }
 }

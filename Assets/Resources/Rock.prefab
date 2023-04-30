@@ -106,8 +106,8 @@ GameObject:
   - component: {fileID: 7774213420203458546}
   - component: {fileID: 3746493898826072841}
   m_Layer: 7
-  m_Name: Iron
-  m_TagString: Iron
+  m_Name: Rock
+  m_TagString: Rock
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

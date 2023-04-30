@@ -41,7 +41,7 @@ public class EventRoot : MonoBehaviour
         {
             case Event.TYPE.ROCKET:
                 // 가지고 있는 것이 철광석이라면.
-                if (carried_item == Item.TYPE.IRON)
+                if (carried_item == Item.TYPE.ROCK)  // 수정해야됨
                 {
                     ret = true; // '이벤트할 수 있어요！'라고 응답한다.
                 }

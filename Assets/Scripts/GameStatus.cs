@@ -5,11 +5,11 @@ using UnityEngine;
 public class GameStatus : MonoBehaviour
 {
     // 철광석, 식물을 사용했을 때 각각의 수리 정도.
-    public static float GAIN_REPAIRMENT_IRON = 0.30f;
+    public static float GAIN_REPAIRMENT_ROCK = 0.30f;
     public static float GAIN_REPAIRMENT_PLANT = 0.10f;
 
     // 철광석, 사과, 식물을 운반했을 때 각각의 체력 소모 정도.
-    public static float CONSUME_SATIETY_IRON = 0.20f;
+    public static float CONSUME_SATIETY_ROCK = 0.20f;
     public static float CONSUME_SATIETY_APPLE = 0.1f;
     public static float CONSUME_SATIETY_PLANT = 0.1f;
 
