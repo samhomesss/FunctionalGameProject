@@ -13,6 +13,7 @@ TagManager:
   - Rock
   - Lumber
   - Bonfire
+  - PickAxe
   layers:
   - Default
   - TransparentFX

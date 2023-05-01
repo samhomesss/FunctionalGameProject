@@ -14,7 +14,7 @@ public class PlayerControl : MonoBehaviour
         public bool left; // ←.
         public bool pick; // 줍는다／버린다.
         public bool action; // 먹는다 / 수리한다.
-        public bool action2;  // 불을 살린다.
+        public bool action2;  // 불을 살린다 / 사과를 심는다.
     };
 
     private Key key; // 키 조작 정보를 보관하는 변수.
@@ -25,7 +25,8 @@ public class PlayerControl : MonoBehaviour
         MOVE = 0, // 이동 중.
         REPAIRING, // 수리 중.
         EATING, // 식사 중.
-        MAKINGFIRE,
+        MAKINGFIRE, // 불 살리는중
+        PLANTING,  // 나무 심는중
         NUM, // 상태가 몇 종류 있는지 나타낸다(=3).
     };
 
@@ -45,6 +46,7 @@ public class PlayerControl : MonoBehaviour
 
     private GameStatus game_status = null;
     public float bonfireDistance;
+
     // Use this for initialization
     void Start()
     {
@@ -53,12 +55,10 @@ public class PlayerControl : MonoBehaviour
 
         this.item_root = GameObject.Find("GameRoot").GetComponent<ItemRoot>();
         this.guistyle.fontSize = 16;
-
         this.event_root = GameObject.Find("GameRoot").GetComponent<EventRoot>();
         this.rocket_model = GameObject.Find("rocket").transform.Find("rocket_model").gameObject;
         this.game_status = GameObject.Find("GameRoot").GetComponent<GameStatus>();
         this.bonfire = GameObject.Find("Bonfire");
-        
     }
 
     // Update is called once per frame
@@ -70,6 +70,7 @@ public class PlayerControl : MonoBehaviour
         float eat_time = 0.5f; // 사과는 2초에 걸쳐 먹는다.
         float repair_time = 0.5f; // 수리에 걸리는 시간도 2초.
         float makeFire_time = 0.5f; // 땔감 넣는 시간도 2초.
+        float plante_time = 0.5f; // 땔감 넣는 시간도 2초.
 
         // 상태를 변화시킨다---------------------.
         if (this.next_step == STEP.NONE)
@@ -83,7 +84,6 @@ public class PlayerControl : MonoBehaviour
                         { // 액션 키가 눌려있지 않다.
                             break; // 루프 탈출.
                         }
-
                 
                         // 주목하는 이벤트가 있을 때.
                         if (this.closest_event != null)
@@ -119,10 +119,23 @@ public class PlayerControl : MonoBehaviour
                             switch (carried_item_type)
                             {
                                 case Item.TYPE.APPLE: // 사과라면.
+                                    if (this.key.action && !this.key.action2)
+                                    {
+                                        this.next_step = STEP.EATING;
+                                        break; // 루프 탈출.
+                                    }
+                                    if(this.key.action2 && !this.key.action)
+                                    {
+                                        this.next_step = STEP.PLANTING;
+                                        break; // 루프 탈출.
+                                    }
+                                    break;
                                 case Item.TYPE.PLANT: // 식물이라면.
                                     // '식사 중' 상태로 이행.
                                     if (!this.key.action && this.key.action2) break; // 루프 탈출.
                                     this.next_step = STEP.EATING;
+                                    break;
+                                case Item.TYPE.PICKAXE:  // 곡괭이면
                                     break;
                             }
                         }
@@ -144,6 +157,12 @@ public class PlayerControl : MonoBehaviour
                     break;
                 case STEP.MAKINGFIRE: // 불 살리는중 
                     if (this.step_timer > makeFire_time)
+                    { // 2초 대기.
+                        this.next_step = STEP.MOVE; // '이동' 상태로 이행.
+                    }
+                    break;
+                case STEP.PLANTING: // 나무 심는중 
+                    if (this.step_timer > plante_time)
                     { // 2초 대기.
                         this.next_step = STEP.MOVE; // '이동' 상태로 이행.
                     }
@@ -189,13 +208,24 @@ public class PlayerControl : MonoBehaviour
                 case STEP.MAKINGFIRE:  // 땔감 넣는중이면.
                     if (this.carried_item != null)
                     {
-                        // 들고 있는 아이템의 '수리 진척 상태'를 가져와서 설정.
+                        // 들고 있는 아이템의 '모닥불 hp 상태'를 가져와서 설정.
                         this.game_status.addTemperature(this.item_root.getRegainTemperature(this.carried_item));
 
                         // 가지고 있는 아이템 삭제.
                         GameObject.Destroy(this.carried_item);
                         this.carried_item = null;
                         this.closest_item = null;
+                    }
+                    break;
+                case STEP.PLANTING:  // 심는중이면.
+                    if (this.carried_item != null)
+                    {
+                        // 나무 생성
+                        this.item_root.CreatTree(carried_item);
+
+                        // 가지고 있는 아이템 삭제.
+                        GameObject.Destroy(this.carried_item);
+                        this.carried_item = null;
                     }
                     break;
             }
@@ -365,37 +395,6 @@ public class PlayerControl : MonoBehaviour
             this.closest_item = null; // 주목을 그만둔다.
         }
     }
-    /*
-        void OnGUI()
-        {
-            float x = 20.0f;
-            float y = Screen.height - 40.0f;
-            // 들고 있는 아이템이 있다면.
-            if (this.carried_item != null)
-            {
-                GUI.Label(new Rect(x, y, 200.0f, 20.0f), "Z:버린다", guistyle);
-                GUI.Label(new Rect(x + 100.0f, y, 200.0f, 20.0f),
-                          "X:먹는다", guistyle);
-            }
-            else
-            {
-                // 주목하고 있는 아이템이 있다면.
-                if (this.closest_item != null)
-                {
-                    GUI.Label(new Rect(x, y, 200.0f, 20.0f), "Z:줍는다", guistyle);
-                }
-            }
-
-            switch (this.step)
-            {
-                case STEP.EATING:
-                    GUI.Label(new Rect(x, y, 200.0f, 20.0f),
-                              "우적우적우물우물……", guistyle);
-                    break;
-            }
-        }
-    */
-
 
     private void pick_or_drop_control()
     {
@@ -415,16 +414,27 @@ public class PlayerControl : MonoBehaviour
                 this.carried_item = this.closest_item;
                 // 들고 있는 아이템을 자신의 자식으로 설정.
                 this.carried_item.transform.parent = this.transform;
-                // 2.0f 위에 배치(머리 위로 이동).
-                this.carried_item.transform.localPosition = Vector3.up * 2.0f;
-                // 주목 중 아이템을 없앤다.
+                if(this.carried_item.CompareTag("PickAxe"))
+                {
+                    this.carried_item.transform.localPosition = new Vector3(0.6f, 0.23f, 0.6f);
+                    this.carried_item.transform.localRotation = Quaternion.Euler(176.0f, 90.0f, 30.0f);
+                }
+                else
+                    this.carried_item.transform.localPosition = Vector3.up * 2.0f;  // 2.0f 위에 배치(머리 위로 이동).
                 this.closest_item = null;
             }
             else
             { // 들고 있는 아이템이 있을 경우.
-                // 들고 있는 아이템을 약간(1.0f) 앞으로 이동시켜서.
-                this.carried_item.transform.localPosition =
-                    Vector3.forward * 1.0f;
+                if(this.carried_item.CompareTag("PickAxe"))
+                {
+                    Vector3 pos = transform.position;
+                    pos.y = 0.15f;
+                    this.carried_item.transform.localPosition = Vector3.down * 0.9f + Vector3.forward * 1.2f;
+                    this.carried_item.transform.localEulerAngles = new Vector3(90, 90, 0);
+                }
+                else
+                    this.carried_item.transform.localPosition = Vector3.forward * 1.0f;  // 들고 있는 아이템을 약간(1.0f) 앞으로 이동시켜서.
+
                 this.carried_item.transform.parent = null; // 자식 설정을 해제.
                 this.carried_item = null; // 들고 있던 아이템을 없앤다.
             }
@@ -490,11 +500,17 @@ public class PlayerControl : MonoBehaviour
                 {
                     break;
                 }
-                if (item_root.getItemType(this.carried_item) == Item.TYPE.ROCK)
+                if (item_root.getItemType(this.carried_item) == Item.TYPE.ROCK || item_root.getItemType(this.carried_item) == Item.TYPE.PICKAXE)
                 {
                     break;
                 }
                 GUI.Label(new Rect(x + 100.0f, y, 200.0f, 20.0f), "x:먹는다", guistyle);
+                if(item_root.getItemType(this.carried_item) == Item.TYPE.APPLE)
+                {
+                    x += 100;
+                    GUI.Label(new Rect(x + 100.0f, y, 200.0f, 20.0f), "c:사과를 심는다", guistyle);
+                }
+                   
             } while (false);
         }
         else
@@ -515,6 +531,9 @@ public class PlayerControl : MonoBehaviour
                 break;
             case STEP.MAKINGFIRE:
                 GUI.Label(new Rect(Screen.width / 2 - 50.0f, y, 200.0f, 20.0f), "땔감넣는중...", guistyle);
+                break;
+            case STEP.PLANTING:
+                GUI.Label(new Rect(Screen.width / 2 - 50.0f, y, 200.0f, 20.0f), "나무심는중...", guistyle);
                 break;
         }
         Debug.Log(this.is_event_ignitable());

@@ -50,7 +50,6 @@ public class EventRoot : MonoBehaviour
                 {
                     ret = true; // '이벤트할 수 있어요！'라고 응답한다.
                 }
-         
                 break;
 
             case Event.TYPE.BONFIRE:

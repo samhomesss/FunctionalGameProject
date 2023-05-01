@@ -6,7 +6,7 @@ public class Item
 {
     public enum TYPE
     { // 아이템 종류.
-        NONE = -1, IRON = 0, APPLE, PLANT, LUMBER, ROCK,  // 없음, 철광석, 사과, 식물, 나무, 돌맹이
+        NONE = -1, IRON = 0, APPLE, PLANT, LUMBER, ROCK, PICKAXE,  // 없음, 철광석, 사과, 식물, 나무, 돌맹이, 곡괭이
         NUM,
     }; // 아이템이 몇 종류인가 나타낸다(=3).
 };
@@ -15,31 +15,35 @@ public class ItemRoot : MonoBehaviour
 {
     public GameObject RockPrefab = null; // Prefab 'ROCK'
     public GameObject plantPrefab = null; // Prefab 'Plant'
-    public GameObject applePrefab = null; // Prefab 'Apple'
+    public GameObject ironPrefab = null; // Prefab 'Iron'
+    public GameObject appleTreePrefab = null; // Prefab 'Tree'
 
-    GameObject applerespawn;
-
-    protected List<Vector3> respawn_points; // 출현 지점 List.
+    Apple apple;
+    protected List<Transform> respawn_points; // 출현 지점 List.
 
     public float step_timer = 0.0f;
-    public static float RESPAWN_TIME_APPLE = 5.0f; // 사과 출현 시간 상수.
+    //public static float RESPAWN_TIME_APPLE = 5.0f; // 사과 출현 시간 상수.
     public static float RESPAWN_TIME_ROCK = 12.0f; // 철광석 출현 시간 상수.
     public static float RESPAWN_TIME_PLANT = 6.0f; // 식물 출현 시간 상수.
 
-    private float respawn_timer_apple = 0.0f; // 사과의 출현 시간.
+    //private float respawn_timer_apple = 0.0f; // 사과의 출현 시간.
     private float respawn_timer_rock = 0.0f; // 철광석의 출현 시간. 
     private float respawn_timer_plant = 0.0f; // 식물의 출현 시간.
-
-    
+       
 
     // 초기화 작업을 시행한다.
     void Start()
     {
         // 메모리 영역 확보.
-        this.respawn_points = new List<Vector3>();
+        this.respawn_points = new List<Transform>();
         // "PlantRespawn" 태그가 붙은 모든 오브젝트를 배열에 저장.
         GameObject[] respawns = GameObject.FindGameObjectsWithTag("PlantRespawn");
-       
+        apple = FindObjectOfType<Apple>().GetComponent<Apple>();
+        RockPrefab = Resources.Load<GameObject>("Rock");
+        plantPrefab = Resources.Load<GameObject>("Plant");
+        appleTreePrefab = Resources.Load<GameObject>("Tree");
+        //ironPrefab = Resources.Load<GameObject>("Iron");
+
         // 배열 respawns 내의 개개의 GameObject를 순서래도 처리한다.
         foreach (GameObject go in respawns)
         {
@@ -50,11 +54,9 @@ public class ItemRoot : MonoBehaviour
                 renderer.enabled = false; // 그 렌더러를 보이지 않게.
             }
             // 출현 포인트 List에 위치 정보를 추가.
-            this.respawn_points.Add(go.transform.position);
+            this.respawn_points.Add(go.transform);
         }
-        // 사과의 출현 포인트를 취득하고, 렌더러를 보이지 않게.
-        applerespawn = GameObject.Find("Tree");
-        //applerespawn.GetComponent<MeshRenderer>().enabled = false;
+      
         // 철광석의 출현 포인트를 취득하고, 렌더러를 보이지 않게.
         GameObject rockrespawn = GameObject.Find("RockRespawn");
         rockrespawn.GetComponent<MeshRenderer>().enabled = false;
@@ -69,14 +71,14 @@ public class ItemRoot : MonoBehaviour
     // 각 아이템의 타이머 값이 출현 시간을 초과하면 해당 아이템을 출현.
     void Update()
     {
-        respawn_timer_apple += Time.deltaTime;
+        //respawn_timer_apple += Time.deltaTime;
         respawn_timer_rock += Time.deltaTime;
         respawn_timer_plant += Time.deltaTime;
-        if (respawn_timer_apple > RESPAWN_TIME_APPLE  && applerespawn.transform.GetChild(1).transform.childCount < 8)
-        {
-            respawn_timer_apple = 0.0f;
-            this.respawnApple(); // 사과를 출현시킨다.
-        }
+        //if (respawn_timer_apple > RESPAWN_TIME_APPLE)
+        //{
+        //    respawn_timer_apple = 0.0f;
+        //    this.apple.respawnApple();
+        //}
         if (respawn_timer_rock > RESPAWN_TIME_ROCK)
         {
             respawn_timer_rock = 0.0f;
@@ -87,8 +89,6 @@ public class ItemRoot : MonoBehaviour
             respawn_timer_plant = 0.0f;
             this.respawnPlant(); // 식물을 출현시킨다.
         }
-
-       
     }
 
     // 아이템의 종류를 Item.TYPE형으로 반환하는 메소드.
@@ -104,6 +104,7 @@ public class ItemRoot : MonoBehaviour
                 case "Plant": type = Item.TYPE.PLANT; break;
                 case "Iron": type = Item.TYPE.IRON; break;
                 case "Lumber": type = Item.TYPE.LUMBER; break;
+                case "PickAxe": type = Item.TYPE.PICKAXE; break;
             }
         }
         return (type);
@@ -115,32 +116,23 @@ public class ItemRoot : MonoBehaviour
         // 철광석 프리팹을 인스턴스화.
         GameObject go = GameObject.Instantiate(this.RockPrefab) as GameObject;
         // 철광석의 출현 포인트를 취득.
-        Vector3 pos = GameObject.Find("RockRespawn").transform.position;
+        Transform trans = GameObject.Find("RockRespawn").transform;
+        Vector3 pos = trans.position;
         // 출현 위치를 조정.
         pos.y = 1.0f;
         pos.x += Random.Range(-1.0f, 1.0f);
         pos.z += Random.Range(-1.0f, 1.0f);
         // 철광석의 위치를 이동.
         go.transform.position = pos;
+        go.name = RockPrefab.name;
+        go.transform.SetParent(trans);
     }
 
     // 사과를 출현시킨다.
-    public void respawnApple()
-    {
-        // 사과 프리팹을 인스턴스화.
-        GameObject go = GameObject.Instantiate(this.applePrefab) as GameObject;
-        // 사과의 출현 포인트를 취득.
-        Vector3 pos = GameObject.Find("Tree").transform.position;
-        // 출현 위치를 조정.
-        pos.y = 0.5f;
-        float radius = applerespawn.GetComponent<SphereCollider>().radius;
-        pos.x += Random.Range(-radius, radius);
-        pos.z += Random.Range(-radius, radius);
-        // 사과의 위치를 이동.
-        go.transform.position = pos;
-        go.gameObject.name = applePrefab.name;
-        go.transform.SetParent(applerespawn.transform.GetChild(1));
-    }
+    //public void respawnApple()
+    //{
+    //    apple.respawnApple();
+    //}
 
     // 식물을 출현시킨다.
     public void respawnPlant()
@@ -151,14 +143,26 @@ public class ItemRoot : MonoBehaviour
             GameObject go = GameObject.Instantiate(this.plantPrefab) as GameObject;
             // 식물의 출현 포인트를 랜덤하게 취득.
             int n = Random.Range(0, this.respawn_points.Count);
-            Vector3 pos = this.respawn_points[n];
+            Transform trans = this.respawn_points[n];
+            Vector3 pos = trans.position;
             // 출현 위치를 조정.
             pos.y = 1.0f;
             pos.x += Random.Range(-1.0f, 1.0f);
             pos.z += Random.Range(-1.0f, 1.0f);
             // 식물의 위치를 이동.
             go.transform.position = pos;
+            go.name = plantPrefab.name;
+            go.transform.SetParent(trans);
         }
+    }
+
+    public void CreatTree(GameObject apple)
+    {
+        GameObject go = GameObject.Instantiate(this.appleTreePrefab) as GameObject;
+
+        go.transform.position = new Vector3(apple.transform.position.x, 1.1f, apple.transform.position.z);
+        go.gameObject.name = appleTreePrefab.name;
+
     }
 
     // 들고 있는 아이템에 따른 ‘수리 진척 상태’를 반환
