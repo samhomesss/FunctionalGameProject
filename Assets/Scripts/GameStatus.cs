@@ -38,11 +38,6 @@ public class GameStatus : MonoBehaviour
         bonfire = GameObject.Find("Bonfire");
     }
 
-    private void Update()
-    {
-        regulateBonfire();
-    }
-
     void OnGUI()
     {
         float x = Screen.width * 0.2f;

@@ -248,7 +248,7 @@ public class PlayerControl : MonoBehaviour
                 break;
         }
 
-        
+        game_status.regulateBonfire();
     }
 
     private void get_input()
@@ -543,7 +543,7 @@ public class PlayerControl : MonoBehaviour
             // 이벤트용 메시지를 취득.
             string message = this.event_root.getIgnitableMessage(this.closest_event);
             if(message == "수리한다")
-                GUI.Label(new Rect(x + 200.0f, y, 200.0f, 20.0f), "X:" + message, guistyle);
+                GUI.Label(new Rect(x + 100.0f, y, 200.0f, 20.0f), "X:" + message, guistyle);
             if(message == "불을 살린다")
                 GUI.Label(new Rect(x + 200.0f, y, 200.0f, 20.0f), "C:" + message, guistyle);
         }
