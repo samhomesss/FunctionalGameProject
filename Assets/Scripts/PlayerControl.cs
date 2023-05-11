@@ -47,6 +47,8 @@ public class PlayerControl : MonoBehaviour
     private GameStatus game_status = null;
     public float bonfireDistance;
 
+    private Weather game_status_weather = null;
+
     // Use this for initialization
     void Start()
     {
@@ -59,6 +61,7 @@ public class PlayerControl : MonoBehaviour
         this.rocket_model = GameObject.Find("rocket").transform.Find("rocket_model").gameObject;
         this.game_status = GameObject.Find("GameRoot").GetComponent<GameStatus>();
         this.bonfire = GameObject.Find("Bonfire");
+        this.game_status_weather = game_status.GetWeather();
     }
 
     // Update is called once per frame
@@ -135,7 +138,7 @@ public class PlayerControl : MonoBehaviour
                                     if (!this.key.action && this.key.action2) break; // 루프 탈출.
                                     this.next_step = STEP.EATING;
                                     break;
-                                case Item.TYPE.PICKAXE:  // 곡괭이면
+                                case Item.TYPE.HAMMER:  // 망치이면
                                     break;
                             }
                         }
@@ -245,6 +248,19 @@ public class PlayerControl : MonoBehaviour
             case STEP.REPAIRING:
                 // 우주선을 회전시킨다.
                 this.rocket_model.transform.localRotation *= Quaternion.AngleAxis(360.0f / 10.0f * Time.deltaTime, Vector3.up);
+                break;
+        }
+
+        switch (game_status_weather.GetWeatherState())
+        {
+            case Weather.WeatherState.SUNNY:
+            case Weather.WeatherState.CLOUDY:
+                MOVE_SPEED = 7.0f;
+                break;
+            case Weather.WeatherState.RAINY:
+                MOVE_SPEED = 4.0f;
+                break;
+            default:
                 break;
         }
 
@@ -414,7 +430,7 @@ public class PlayerControl : MonoBehaviour
                 this.carried_item = this.closest_item;
                 // 들고 있는 아이템을 자신의 자식으로 설정.
                 this.carried_item.transform.parent = this.transform;
-                if(this.carried_item.CompareTag("PickAxe"))
+                if(this.carried_item.CompareTag("Hammer"))
                 {
                     this.carried_item.transform.localPosition = new Vector3(0.6f, 0.23f, 0.6f);
                     this.carried_item.transform.localRotation = Quaternion.Euler(176.0f, 90.0f, 30.0f);
@@ -425,7 +441,7 @@ public class PlayerControl : MonoBehaviour
             }
             else
             { // 들고 있는 아이템이 있을 경우.
-                if(this.carried_item.CompareTag("PickAxe"))
+                if(this.carried_item.CompareTag("Hammer"))
                 {
                     Vector3 pos = transform.position;
                     pos.y = 0.15f;
@@ -500,7 +516,7 @@ public class PlayerControl : MonoBehaviour
                 {
                     break;
                 }
-                if (item_root.getItemType(this.carried_item) == Item.TYPE.ROCK || item_root.getItemType(this.carried_item) == Item.TYPE.PICKAXE)
+                if (item_root.getItemType(this.carried_item) == Item.TYPE.ROCK || item_root.getItemType(this.carried_item) == Item.TYPE.HAMMER)
                 {
                     break;
                 }
@@ -536,7 +552,7 @@ public class PlayerControl : MonoBehaviour
                 GUI.Label(new Rect(Screen.width / 2 - 50.0f, y, 200.0f, 20.0f), "나무심는중...", guistyle);
                 break;
         }
-        Debug.Log(this.is_event_ignitable());
+        //Debug.Log(this.is_event_ignitable());
 
         if (this.is_event_ignitable())
         { // 이벤트가 시작 가능한 경우.
@@ -555,4 +571,9 @@ public class PlayerControl : MonoBehaviour
         float temperature = game_status.GetTemperature();
         if (bonfireDistance < 5.0f && temperature > 0) game_status.addBodyTemperature();
     }
+
+    //void SetMoveSpeed()
+    //{
+
+    //}
 }

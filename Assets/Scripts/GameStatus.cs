@@ -28,15 +28,20 @@ public class GameStatus : MonoBehaviour
     public GUIStyle guistyle; // 폰트 스타일.
     public GameObject bonfire = null;
 
-    public static float CONSUME_SATIETY_ALWAYS = 0.03f;
-    public static float CONSUME_BODYTEMPERATURE_ALWAYS = 0.02f;
-    public static float ENJOY_THE_FIRE = 0.06f; 
+    public static float CONSUME_SATIETY_ALWAYS = 0.03f;  // 배고픔 감소정도
+    public static float CONSUME_BODYTEMPERATURE_ALWAYS = 0.02f;  // 체온 감소정도
+    public static float ENJOY_THE_FIRE = 0.06f;  // 체온 회복 정도
+    public float consumeBonfire = 0.04f;  // 모닥불 감소 계수
+
+    Weather weather;
 
     void Start()
     {
         this.guistyle.fontSize = 24; // 폰트 크기를 24로.
         bonfire = GameObject.Find("Bonfire");
+        weather = gameObject.GetComponent<Weather>();
     }
+
 
     void OnGUI()
     {
@@ -127,15 +132,33 @@ public class GameStatus : MonoBehaviour
     public void regulateBonfire()
     {
         var emission = bonfire.transform.GetChild(0).GetComponent<ParticleSystem>().emission;
+
+        Weather.WeatherState currentState = weather.GetWeatherState();
         
-        temperature -= 0.04f * Time.deltaTime;
+        switch (currentState)
+        {
+            case Weather.WeatherState.SUNNY:
+                consumeBonfire = 0.02f;
+                CONSUME_BODYTEMPERATURE_ALWAYS = 0.01f;
+                break;
+            case Weather.WeatherState.CLOUDY:
+                consumeBonfire = 0.04f;
+                CONSUME_BODYTEMPERATURE_ALWAYS = 0.02f;
+                break;
+            case Weather.WeatherState.RAINY:
+                consumeBonfire = 0.06f;
+                CONSUME_BODYTEMPERATURE_ALWAYS = 0.04f;
+                break;
+            default:
+                break;
+        }
+
+        temperature -= consumeBonfire * Time.deltaTime;  // 모닥불 상태
         if (temperature < 0)
         {
             temperature = 0;
-            CONSUME_BODYTEMPERATURE_ALWAYS = 0.05f;
+            CONSUME_BODYTEMPERATURE_ALWAYS += 0.02f;  // 체온 계수
         }
-        else
-            CONSUME_BODYTEMPERATURE_ALWAYS = 0.02f;
 
         emission.rateOverTime = temperature * 15;
     }
@@ -144,5 +167,11 @@ public class GameStatus : MonoBehaviour
     {
         return temperature;
     }
+
+    public Weather GetWeather()
+    {
+        return weather;
+    }
+    
     
 }

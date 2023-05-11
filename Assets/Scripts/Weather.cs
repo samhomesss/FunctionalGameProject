@@ -69,4 +69,9 @@ public class Weather : MonoBehaviour
 
         return null;
     }
+
+    public WeatherState GetWeatherState()
+    {
+        return currentState;
+    }
 }

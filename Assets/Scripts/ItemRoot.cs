@@ -6,7 +6,7 @@ public class Item
 {
     public enum TYPE
     { // 아이템 종류.
-        NONE = -1, IRON = 0, APPLE, PLANT, LUMBER, ROCK, PICKAXE,  // 없음, 철광석, 사과, 식물, 나무, 돌맹이, 곡괭이
+        NONE = -1, IRON = 0, APPLE, PLANT, LUMBER, ROCK, PICKAXE, HAMMER, // 없음, 철광석, 사과, 식물, 나무, 돌맹이, 곡괭이
         NUM,
     }; // 아이템이 몇 종류인가 나타낸다(=3).
 };
@@ -105,6 +105,7 @@ public class ItemRoot : MonoBehaviour
                 case "Iron": type = Item.TYPE.IRON; break;
                 case "Lumber": type = Item.TYPE.LUMBER; break;
                 case "PickAxe": type = Item.TYPE.PICKAXE; break;
+                case "Hammer": type = Item.TYPE.HAMMER; break;
             }
         }
         return (type);

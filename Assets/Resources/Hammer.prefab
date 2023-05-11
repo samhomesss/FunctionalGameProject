@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8096402834659094558}
   m_Layer: 7
-  m_Name: pickAxe_model
+  m_Name: Hammer_model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -124,8 +124,8 @@ GameObject:
   - component: {fileID: 8096402835306561638}
   - component: {fileID: 8823282276305852305}
   m_Layer: 7
-  m_Name: PickAxe
-  m_TagString: PickAxe
+  m_Name: Hammer
+  m_TagString: Hammer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
