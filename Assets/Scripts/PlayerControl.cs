@@ -27,6 +27,10 @@ public class PlayerControl : MonoBehaviour
         EATING, // 식사 중.
         MAKINGFIRE, // 불 살리는중
         PLANTING,  // 나무 심는중
+        MINING,
+        CASTING,
+        FELLING,   // 벌목중
+        TABLING,
         NUM, // 상태가 몇 종류 있는지 나타낸다(=3).
     };
 
@@ -48,7 +52,10 @@ public class PlayerControl : MonoBehaviour
     public float bonfireDistance;
 
     private Weather game_status_weather = null;
-
+    private MakingTable makingTable;
+    private GameObject workTable;
+    private bool usingWorkTable = false;
+    bool tableAction = false;
     // Use this for initialization
     void Start()
     {
@@ -62,11 +69,14 @@ public class PlayerControl : MonoBehaviour
         this.game_status = GameObject.Find("GameRoot").GetComponent<GameStatus>();
         this.bonfire = GameObject.Find("Bonfire");
         this.game_status_weather = game_status.GetWeather();
+        workTable = GameObject.Find("workTable");
+        makingTable = GameObject.FindObjectOfType<MakingTable>().GetComponent<MakingTable>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        tableAction = makingTable.TableAction();
         this.get_input(); // 입력 정보 취득. 
 
         this.step_timer += Time.deltaTime;
@@ -74,6 +84,10 @@ public class PlayerControl : MonoBehaviour
         float repair_time = 0.5f; // 수리에 걸리는 시간도 2초.
         float makeFire_time = 0.5f; // 땔감 넣는 시간도 2초.
         float plante_time = 0.5f; // 땔감 넣는 시간도 2초.
+        float mining_time = 0.5f;
+        float casting_time = 0.5f;
+        float felling_time = 0.5f;
+        //float tabling_time = 0.5f;
 
         // 상태를 변화시킨다---------------------.
         if (this.next_step == STEP.NONE)
@@ -87,7 +101,7 @@ public class PlayerControl : MonoBehaviour
                         { // 액션 키가 눌려있지 않다.
                             break; // 루프 탈출.
                         }
-                
+
                         // 주목하는 이벤트가 있을 때.
                         if (this.closest_event != null)
                         {
@@ -110,6 +124,21 @@ public class PlayerControl : MonoBehaviour
                                     if (this.key.action && !this.key.action2) break; // 루프 탈출.
                                     this.next_step = STEP.MAKINGFIRE;
                                     break;
+
+                                case Event.TYPE.MINING:
+                                    if (!this.key.action && this.key.action2) break; // 루프 탈출.
+                                    this.next_step = STEP.MINING;
+                                    break;
+                                case Event.TYPE.CASTING:
+                                    if (this.key.action && !this.key.action2) break; // 루프 탈출.
+                                    this.next_step = STEP.CASTING;
+                                    break;
+                                case Event.TYPE.FELLING:
+                                    if (!this.key.action && this.key.action2) break; // 루프 탈출.
+                                    this.next_step = STEP.FELLING;
+                                    break;
+                               
+
                             }
                             break;
                         }
@@ -127,7 +156,7 @@ public class PlayerControl : MonoBehaviour
                                         this.next_step = STEP.EATING;
                                         break; // 루프 탈출.
                                     }
-                                    if(this.key.action2 && !this.key.action)
+                                    if (this.key.action2 && !this.key.action)
                                     {
                                         this.next_step = STEP.PLANTING;
                                         break; // 루프 탈출.
@@ -170,7 +199,24 @@ public class PlayerControl : MonoBehaviour
                         this.next_step = STEP.MOVE; // '이동' 상태로 이행.
                     }
                     break;
-
+                case STEP.MINING: // 광석 캐는중
+                    if (this.step_timer > mining_time)
+                    { // 2초 대기.
+                        this.next_step = STEP.MOVE; // '이동' 상태로 이행.
+                    }
+                    break;
+                case STEP.CASTING: // 광석 캐는중
+                    if (this.step_timer > casting_time)
+                    { // 2초 대기.
+                        this.next_step = STEP.MOVE; // '이동' 상태로 이행.
+                    }
+                    break;
+                case STEP.FELLING: // 광석 캐는중
+                    if (this.step_timer > felling_time)
+                    { // 2초 대기.
+                        this.next_step = STEP.MOVE; // '이동' 상태로 이행.
+                    }
+                    break;
             }
         }
 
@@ -193,6 +239,7 @@ public class PlayerControl : MonoBehaviour
                         // 가지고 있던 아이템을 폐기.
                         GameObject.Destroy(this.carried_item);
                         this.carried_item = null;
+                        InventoryManager.instance.GetSelectedItem(carried_item);
                     }
                     break;
 
@@ -206,6 +253,7 @@ public class PlayerControl : MonoBehaviour
                         GameObject.Destroy(this.carried_item);
                         this.carried_item = null;
                         this.closest_item = null;
+                        InventoryManager.instance.GetSelectedItem(carried_item);
                     }
                     break;
                 case STEP.MAKINGFIRE:  // 땔감 넣는중이면.
@@ -218,6 +266,7 @@ public class PlayerControl : MonoBehaviour
                         GameObject.Destroy(this.carried_item);
                         this.carried_item = null;
                         this.closest_item = null;
+                        InventoryManager.instance.GetSelectedItem(carried_item);
                     }
                     break;
                 case STEP.PLANTING:  // 심는중이면.
@@ -229,7 +278,27 @@ public class PlayerControl : MonoBehaviour
                         // 가지고 있는 아이템 삭제.
                         GameObject.Destroy(this.carried_item);
                         this.carried_item = null;
+                        InventoryManager.instance.GetSelectedItem(carried_item);
                     }
+                    break;
+                case STEP.MINING: // 광석 캐는중이 되면
+                    this.item_root.creatIron();
+                    break;
+                case STEP.CASTING: // 화로 사용중이 되면
+                    if (this.carried_item != null)
+                    {
+                        // 가지고 있는 아이템 삭제.
+                        GameObject.Destroy(this.carried_item);
+                        this.carried_item = null;
+                        InventoryManager.instance.GetSelectedItem(carried_item);
+                        this.item_root.creatSmeltedIron();
+                    }
+                    break;
+                case STEP.FELLING: // 벌목중이 되면
+                        this.item_root.getTree().fellingTree();
+                    break;
+                case STEP.TABLING: // 벌목중이 되면
+                    //this.item_root.getTree().fellingTree();
                     break;
             }
             this.step_timer = 0.0f;
@@ -240,7 +309,7 @@ public class PlayerControl : MonoBehaviour
         {
             case STEP.MOVE:
                 this.move_control();
-                this.pick_or_drop_control(); 
+                this.pick_or_drop_control();
                 this.game_status.alwaysSatiety();  // 이동 가능한 경우는 항상 배가 고파진다.
                 this.game_status.alwaysBodyTemperature();
                 this.bonfireDIstane();
@@ -265,6 +334,31 @@ public class PlayerControl : MonoBehaviour
         }
 
         game_status.regulateBonfire();
+
+
+        if (usingWorkTable && carried_item != null)
+        {
+            //this.carried_item.transform.SetParent(workTable.transform);
+            this.carried_item.transform.parent = null; // 자식 설정을 해제.
+            this.carried_item = null; // 들고 있던 아이템을 없앤다.
+            //InventoryManager.instance.GetSelectedItem(carried_item);
+        }
+        //else if (!usingWorkTable && carried_item == null)
+        //{
+        //    // 들고 있는 아이템을 자신의 자식으로 설정.
+            
+        //    //this.carried_item.transform.parent = this.transform;
+        //    if (this.closest_item == null)
+        //    { // 주목 중인 아이템이 없으면.
+        //        return; // 아무것도 하지 않고 메소드 종료.
+        //    }
+        //    this.carried_item = this.closest_item;
+            
+        //    workTable.transform.SetParent(this.transform);
+        //    CarriedPosition(this.carried_item);
+        //    this.closest_item = null;
+        //}
+
     }
 
     private void get_input()
@@ -286,6 +380,7 @@ public class PlayerControl : MonoBehaviour
         this.key.left |= Input.GetKey(KeyCode.LeftArrow);
         this.key.left |= Input.GetKey(KeyCode.Keypad4);
         // Z 키가 눌렸으면 true를 대입.
+        
         this.key.pick = Input.GetKeyDown(KeyCode.Z);
         // X 키가 눌렸으면 true를 대입.
         this.key.action = Input.GetKeyDown(KeyCode.X);
@@ -361,7 +456,7 @@ public class PlayerControl : MonoBehaviour
     void OnTriggerStay(Collider other)
     {
         GameObject other_go = other.gameObject;
-               
+
         // 트리거의 GameObject 레이어 설정이 Item이라면.
         if (other_go.layer == LayerMask.NameToLayer("Item"))
         {
@@ -370,7 +465,7 @@ public class PlayerControl : MonoBehaviour
             {
                 if (this.is_other_in_view(other_go))
                 { // 정면에 있으면.
-                    this.closest_item = other_go; // 주목한다.
+                    this.closest_item = other_go; // 주목한다.                    
                 }
                 // 뭔가 주목하고 있으면.
             }
@@ -430,29 +525,39 @@ public class PlayerControl : MonoBehaviour
                 this.carried_item = this.closest_item;
                 // 들고 있는 아이템을 자신의 자식으로 설정.
                 this.carried_item.transform.parent = this.transform;
-                if(this.carried_item.CompareTag("Hammer"))
+
+                CarriedPosition(this.carried_item);
+
+                bool addItem = InventoryManager.instance.AddItem(carried_item);
+                if (addItem)
                 {
-                    this.carried_item.transform.localPosition = new Vector3(0.6f, 0.23f, 0.6f);
-                    this.carried_item.transform.localRotation = Quaternion.Euler(176.0f, 90.0f, 30.0f);
+                    //this.carried_item = null;
                 }
-                else
-                    this.carried_item.transform.localPosition = Vector3.up * 2.0f;  // 2.0f 위에 배치(머리 위로 이동).
+
                 this.closest_item = null;
             }
             else
             { // 들고 있는 아이템이 있을 경우.
-                if(this.carried_item.CompareTag("Hammer"))
+                if (this.carried_item.CompareTag("Hammer"))
                 {
                     Vector3 pos = transform.position;
                     pos.y = 0.15f;
                     this.carried_item.transform.localPosition = Vector3.down * 0.9f + Vector3.forward * 1.2f;
                     this.carried_item.transform.localEulerAngles = new Vector3(90, 90, 0);
                 }
+                else if (this.carried_item.CompareTag("HandSaw") || this.carried_item.CompareTag("PickAxe"))
+                {
+                    Vector3 pos = transform.position;
+                    pos.y = 0.15f;
+                    this.carried_item.transform.localPosition = Vector3.down * 0.9f + Vector3.forward * 1.2f;
+                    this.carried_item.transform.localEulerAngles = new Vector3(0, 90, 0);
+                }
                 else
                     this.carried_item.transform.localPosition = Vector3.forward * 1.0f;  // 들고 있는 아이템을 약간(1.0f) 앞으로 이동시켜서.
 
                 this.carried_item.transform.parent = null; // 자식 설정을 해제.
                 this.carried_item = null; // 들고 있던 아이템을 없앤다.
+                InventoryManager.instance.GetSelectedItem(carried_item);
             }
         } while (false);
     }
@@ -462,7 +567,7 @@ public class PlayerControl : MonoBehaviour
         bool ret = false;
         do
         {
-            Vector3 heading =  this.transform.TransformDirection(Vector3.forward);  // 자신이 현재 향하고 있는 방향을 보관.
+            Vector3 heading = this.transform.TransformDirection(Vector3.forward);  // 자신이 현재 향하고 있는 방향을 보관.
             Vector3 to_other = other.transform.position - this.transform.position;  // 자신 쪽에서 본 아이템의 방향을 보관.
             heading.y = 0.0f;
             to_other.y = 0.0f;
@@ -507,7 +612,7 @@ public class PlayerControl : MonoBehaviour
         float x = 20.0f;
         float y = Screen.height - 40.0f;
 
-        if (this.carried_item != null)
+        if (this.carried_item != null && !tableAction)
         {
             GUI.Label(new Rect(x, y, 200.0f, 20.0f), "Z:버린다", guistyle);
             do
@@ -516,17 +621,20 @@ public class PlayerControl : MonoBehaviour
                 {
                     break;
                 }
-                if (item_root.getItemType(this.carried_item) == Item.TYPE.ROCK || item_root.getItemType(this.carried_item) == Item.TYPE.HAMMER)
+                if (item_root.getItemType(this.carried_item) == Item.TYPE.ROCK || item_root.getItemType(this.carried_item) == Item.TYPE.HAMMER
+                    || item_root.getItemType(this.carried_item) == Item.TYPE.PICKAXE || item_root.getItemType(this.carried_item) == Item.TYPE.HANDSAW
+                    || item_root.getItemType(this.carried_item) == Item.TYPE.IRON || item_root.getItemType(this.carried_item) == Item.TYPE.SMELTEDIRON
+                    || item_root.getItemType(this.carried_item) == Item.TYPE.LUMBER)
                 {
                     break;
                 }
                 GUI.Label(new Rect(x + 100.0f, y, 200.0f, 20.0f), "x:먹는다", guistyle);
-                if(item_root.getItemType(this.carried_item) == Item.TYPE.APPLE)
+                if (item_root.getItemType(this.carried_item) == Item.TYPE.APPLE)
                 {
                     x += 100;
                     GUI.Label(new Rect(x + 100.0f, y, 200.0f, 20.0f), "c:사과를 심는다", guistyle);
                 }
-                   
+
             } while (false);
         }
         else
@@ -551,6 +659,12 @@ public class PlayerControl : MonoBehaviour
             case STEP.PLANTING:
                 GUI.Label(new Rect(Screen.width / 2 - 50.0f, y, 200.0f, 20.0f), "나무심는중...", guistyle);
                 break;
+            case STEP.MINING:
+                GUI.Label(new Rect(Screen.width / 2 - 50.0f, y, 200.0f, 20.0f), "광석캐는중...", guistyle);
+                break;
+            case STEP.CASTING:
+                GUI.Label(new Rect(Screen.width / 2 - 50.0f, y, 200.0f, 20.0f), "철을 만드는중..", guistyle);
+                break;
         }
         //Debug.Log(this.is_event_ignitable());
 
@@ -558,9 +672,9 @@ public class PlayerControl : MonoBehaviour
         { // 이벤트가 시작 가능한 경우.
             // 이벤트용 메시지를 취득.
             string message = this.event_root.getIgnitableMessage(this.closest_event);
-            if(message == "수리한다")
+            if (message == "수리한다" || message == "광석을 캔다" || message == "벌목한다")
                 GUI.Label(new Rect(x + 100.0f, y, 200.0f, 20.0f), "X:" + message, guistyle);
-            if(message == "불을 살린다")
+            if (message == "불을 살린다" || message == "철을 제련한다")
                 GUI.Label(new Rect(x + 200.0f, y, 200.0f, 20.0f), "C:" + message, guistyle);
         }
     }
@@ -572,8 +686,40 @@ public class PlayerControl : MonoBehaviour
         if (bonfireDistance < 5.0f && temperature > 0) game_status.addBodyTemperature();
     }
 
-    //void SetMoveSpeed()
-    //{
+    public void CarriedPosition(GameObject obj)
+    {
+        if (obj.CompareTag("Hammer"))
+        {
+            obj.transform.localPosition = new Vector3(0.6f, 0.23f, 0.6f);
+            obj.transform.localRotation = Quaternion.Euler(176.0f, 90.0f, 30.0f);
+        }
+        else if (obj.CompareTag("HandSaw"))
+        {
+            obj.transform.localPosition = new Vector3(0.46f, 0.0f, 0.28f);
+            obj.transform.localRotation = Quaternion.Euler(54.6f, -2.5f, -83f);
+        }
+        else if (obj.CompareTag("PickAxe"))
+        {
 
-    //}
+            obj.transform.localPosition = new Vector3(0.54f, 0.15f, 0.49f);
+            obj.transform.localRotation = Quaternion.Euler(59.0f, -0.4f, -90f);
+        }
+        else
+            obj.transform.localPosition = Vector3.up * 2.0f;  // 2.0f 위에 배치(머리 위로 이동).
+    }
+
+    public void SetCarredItem(GameObject item)
+    {
+        carried_item = item;
+    }
+
+    public GameObject GetCarredItem()
+    {
+        return carried_item;
+    }
+
+    public void SetUsingWorkTable(bool act)
+    {
+        usingWorkTable = act;
+    }
 }

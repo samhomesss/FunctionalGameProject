@@ -23,7 +23,7 @@ public class SceneControl : MonoBehaviour
     private float clear_time = 0.0f; // 클리어 시간.
     public GUIStyle guistyle; // 폰트 스타일.
 
-    private float GAME_OVER_TIME = 60.0f; // 제한시간은 60초.
+    private float GAME_OVER_TIME = 300.0f; // 제한시간은 60초.
 
     void Start()
     {
@@ -43,16 +43,16 @@ public class SceneControl : MonoBehaviour
             switch (this.step)
             {
                 case STEP.PLAY:
-                    //if (this.game_status.isGameClear())
-                    //{
-                    //    // 클리어 상태로 이동.
-                    //    this.next_step = STEP.CLEAR;
-                    //}
-                    //if (this.game_status.isGameOver())
-                    //{
-                    //    // 게임 오버 상태로 이동.
-                    //    this.next_step = STEP.GAMEOVER;
-                    //}
+                    if (this.game_status.isGameClear())
+                    {
+                        // 클리어 상태로 이동.
+                        this.next_step = STEP.CLEAR;
+                    }
+                    if (this.game_status.isGameOver())
+                    {
+                        // 게임 오버 상태로 이동.
+                        this.next_step = STEP.GAMEOVER;
+                    }
                     if (this.step_timer > GAME_OVER_TIME)
                     {
                         // 제한 시간을 넘었으면 게임 오버.
@@ -61,12 +61,10 @@ public class SceneControl : MonoBehaviour
                     break;
                 // 클리어 시 및 게임 오버 시의 처리.
                 case STEP.CLEAR:
+                    SceneManager.LoadScene("GameClear");
+                    break;
                 case STEP.GAMEOVER:
-                    if (Input.GetMouseButtonDown(0))
-                    {
-                        // 마우스 버튼이 눌렸으면 GameScene을 다시 읽는다.
-                        SceneManager.LoadScene("GameScene");
-                    }
+                    SceneManager.LoadScene("GameOver");
                     break;
             }
         }

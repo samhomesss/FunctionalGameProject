@@ -4,5 +4,17 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Title.unity
+    guid: 983837b09cf2d374c8e716c8ecab0be8
+  - enabled: 1
+    path: Assets/Scenes/PlaplaPlanet.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/GameOver.unity
+    guid: a585d68da8505284ebb73929abc5fece
+  - enabled: 1
+    path: Assets/Scenes/GameClear.unity
+    guid: 7cefec3afdbcd8c4da3bbb525bbf99cd
   m_configObjects: {}

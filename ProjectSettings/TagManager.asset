@@ -15,6 +15,10 @@ TagManager:
   - Bonfire
   - PickAxe
   - Hammer
+  - HandSaw
+  - Brazier
+  - SmeltedIron
+  - Table
   layers:
   - Default
   - TransparentFX

@@ -5,18 +5,18 @@ using UnityEngine;
 public class GameStatus : MonoBehaviour
 {
     // 철광석, 식물을 사용했을 때 각각의 수리 정도.
-    public static float GAIN_REPAIRMENT_ROCK = 0.30f;
-    public static float GAIN_REPAIRMENT_PLANT = 0.10f;
+    public static float GAIN_REPAIRMENT_LUMBER = 0.10f;
+    public static float GAIN_REPAIRMENT_SMELTEDIRON = 0.30f;
 
     // 철광석, 사과, 식물을 운반했을 때 각각의 체력 소모 정도.
-    public static float CONSUME_SATIETY_ROCK = 0.06f;
-    public static float CONSUME_SATIETY_APPLE = 0.03f;
-    public static float CONSUME_SATIETY_PLANT = 0.03f;
+    public static float CONSUME_SATIETY_ROCK = 0.02f;
+    public static float CONSUME_SATIETY_APPLE = 0.01f;
+    public static float CONSUME_SATIETY_PLANT = 0.01f;
 
     // 사과, 식물을 먹었을 때 각각의 체력 회복 정도.
     public static float REGAIN_SATIETY_APPLE = 0.7f;
     public static float REGAIN_SATIETY_PLANT = 0.3f;  // 공복 회복
-    public static float REGAIN_TEMPERATURE_PLANT = 0.3f;  // 모닥불 회복
+    public static float REGAIN_TEMPERATURE_PLANT = 0.4f;  // 모닥불 회복
     public static float REGAIN_TEMPERATURE_APPLE = 0.1f;
 
 
@@ -28,10 +28,10 @@ public class GameStatus : MonoBehaviour
     public GUIStyle guistyle; // 폰트 스타일.
     public GameObject bonfire = null;
 
-    public static float CONSUME_SATIETY_ALWAYS = 0.03f;  // 배고픔 감소정도
-    public static float CONSUME_BODYTEMPERATURE_ALWAYS = 0.02f;  // 체온 감소정도
-    public static float ENJOY_THE_FIRE = 0.06f;  // 체온 회복 정도
-    public float consumeBonfire = 0.04f;  // 모닥불 감소 계수
+    public static float CONSUME_SATIETY_ALWAYS = 0.02f;  // 배고픔 감소정도
+    public static float CONSUME_BODYTEMPERATURE_ALWAYS = 0.01f;  // 체온 감소정도
+    public static float ENJOY_THE_FIRE = 0.07f;  // 체온 회복 정도
+    public float consumeBonfire = 0.02f;  // 모닥불 감소 계수
 
     Weather weather;
 
@@ -42,20 +42,19 @@ public class GameStatus : MonoBehaviour
         weather = gameObject.GetComponent<Weather>();
     }
 
-
     void OnGUI()
     {
-        float x = Screen.width * 0.2f;
+        float x = Screen.width * 0.35f;
         float y = 20.0f;
 
         // 체력을 표시.
         GUI.Label(new Rect(x, y, 200.0f, 20.0f), "포만감:" + (this.satiety * 100.0f).ToString("000"), guistyle);
-        x += 200;
+        x += 160;
         GUI.Label(new Rect(x, y, 200.0f, 20.0f), "체온:" + (this.bodyTemperature * 100.0f).ToString("000"), guistyle);
-        x += 200;
+        x += 160;
         // 수리 정도를 표시.
         GUI.Label(new Rect(x, y, 200.0f, 20.0f), "로켓 :" + (this.repairment * 100.0f).ToString("000"), guistyle);
-        x += 200;
+        x += 160;
         GUI.Label(new Rect(x, y, 200.0f, 20.0f), "모닥불 :" + (this.temperature * 100.0f).ToString("000"), guistyle);
     }
 
@@ -96,6 +95,10 @@ public class GameStatus : MonoBehaviour
     {
         bool is_over = false;
         if (this.satiety <= 0.0f)
+        { // 포만감이 0이하라면.
+            is_over = true; // 게임 오버.
+        }
+        if (this.bodyTemperature <= 0.0f)
         { // 체력이 0이하라면.
             is_over = true; // 게임 오버.
         }
@@ -138,16 +141,16 @@ public class GameStatus : MonoBehaviour
         switch (currentState)
         {
             case Weather.WeatherState.SUNNY:
-                consumeBonfire = 0.02f;
+                consumeBonfire = 0.01f;
                 CONSUME_BODYTEMPERATURE_ALWAYS = 0.01f;
                 break;
             case Weather.WeatherState.CLOUDY:
-                consumeBonfire = 0.04f;
+                consumeBonfire = 0.02f;
                 CONSUME_BODYTEMPERATURE_ALWAYS = 0.02f;
                 break;
             case Weather.WeatherState.RAINY:
-                consumeBonfire = 0.06f;
-                CONSUME_BODYTEMPERATURE_ALWAYS = 0.04f;
+                consumeBonfire = 0.03f;
+                CONSUME_BODYTEMPERATURE_ALWAYS = 0.03f;
                 break;
             default:
                 break;
@@ -157,11 +160,12 @@ public class GameStatus : MonoBehaviour
         if (temperature < 0)
         {
             temperature = 0;
-            CONSUME_BODYTEMPERATURE_ALWAYS += 0.02f;  // 체온 계수
+            CONSUME_BODYTEMPERATURE_ALWAYS += 0.01f;  // 체온 계수
         }
 
         emission.rateOverTime = temperature * 15;
     }
+
 
     public float GetTemperature()
     {

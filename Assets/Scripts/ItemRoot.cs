@@ -6,7 +6,7 @@ public class Item
 {
     public enum TYPE
     { // 아이템 종류.
-        NONE = -1, IRON = 0, APPLE, PLANT, LUMBER, ROCK, PICKAXE, HAMMER, // 없음, 철광석, 사과, 식물, 나무, 돌맹이, 곡괭이
+        NONE = -1, IRON = 0, APPLE, PLANT, LUMBER, ROCK, PICKAXE, HAMMER, HANDSAW, SMELTEDIRON, // 없음, 철광석, 사과, 식물, 나무, 돌맹이, 곡괭이
         NUM,
     }; // 아이템이 몇 종류인가 나타낸다(=3).
 };
@@ -17,19 +17,22 @@ public class ItemRoot : MonoBehaviour
     public GameObject plantPrefab = null; // Prefab 'Plant'
     public GameObject ironPrefab = null; // Prefab 'Iron'
     public GameObject appleTreePrefab = null; // Prefab 'Tree'
+    public GameObject smeltedIronPrefab = null; // Prefab 'SmeltedIron'
 
     Apple apple;
+    Tree tree;
+    Misson missonText;
     protected List<Transform> respawn_points; // 출현 지점 List.
 
     public float step_timer = 0.0f;
     //public static float RESPAWN_TIME_APPLE = 5.0f; // 사과 출현 시간 상수.
-    public static float RESPAWN_TIME_ROCK = 12.0f; // 철광석 출현 시간 상수.
-    public static float RESPAWN_TIME_PLANT = 6.0f; // 식물 출현 시간 상수.
+    public static float RESPAWN_TIME_ROCK = 8.0f; // 돌 출현 시간 상수.
+    public static float RESPAWN_TIME_PLANT = 8.0f; // 식물 출현 시간 상수.
+    
 
     //private float respawn_timer_apple = 0.0f; // 사과의 출현 시간.
-    private float respawn_timer_rock = 0.0f; // 철광석의 출현 시간. 
+    private float respawn_timer_rock = 0.0f; // 돌의 출현 시간. 
     private float respawn_timer_plant = 0.0f; // 식물의 출현 시간.
-       
 
     // 초기화 작업을 시행한다.
     void Start()
@@ -39,11 +42,13 @@ public class ItemRoot : MonoBehaviour
         // "PlantRespawn" 태그가 붙은 모든 오브젝트를 배열에 저장.
         GameObject[] respawns = GameObject.FindGameObjectsWithTag("PlantRespawn");
         apple = FindObjectOfType<Apple>().GetComponent<Apple>();
-        RockPrefab = Resources.Load<GameObject>("Rock");
-        plantPrefab = Resources.Load<GameObject>("Plant");
-        appleTreePrefab = Resources.Load<GameObject>("Tree");
-        //ironPrefab = Resources.Load<GameObject>("Iron");
-
+        tree = FindObjectOfType<Tree>().GetComponent<Tree>();
+        RockPrefab = Resources.Load<GameObject>("Prefab/Rock");
+        plantPrefab = Resources.Load<GameObject>("Prefab/Plant");
+        appleTreePrefab = Resources.Load<GameObject>("Prefab/Tree");
+        ironPrefab = Resources.Load<GameObject>("Prefab/Iron");
+        smeltedIronPrefab = Resources.Load<GameObject>("Prefab/SmeltedIron");
+        missonText = GameObject.FindObjectOfType<Misson>().GetComponent<Misson>();
         // 배열 respawns 내의 개개의 GameObject를 순서래도 처리한다.
         foreach (GameObject go in respawns)
         {
@@ -106,6 +111,8 @@ public class ItemRoot : MonoBehaviour
                 case "Lumber": type = Item.TYPE.LUMBER; break;
                 case "PickAxe": type = Item.TYPE.PICKAXE; break;
                 case "Hammer": type = Item.TYPE.HAMMER; break;
+                case "HandSaw": type = Item.TYPE.HANDSAW; break;
+                case "SmeltedIron": type = Item.TYPE.SMELTEDIRON; break;
             }
         }
         return (type);
@@ -128,6 +135,46 @@ public class ItemRoot : MonoBehaviour
         go.name = RockPrefab.name;
         go.transform.SetParent(trans);
     }
+
+    public void creatIron()
+    {
+        //--------------------------
+        GameObject go = GameObject.Instantiate(this.ironPrefab) as GameObject;
+        // 철광석의 출현 포인트를 취득.
+        Transform trans = GameObject.Find("IronRespawn").transform;
+        Vector3 pos = trans.position;
+        // 출현 위치를 조정.
+        pos.y = 0.5f;
+        pos.x = trans.position.x + Random.Range(-2.0f, 2.0f);
+        pos.z = trans.position.z +Random.Range(-2.0f, 2.0f);
+        // 철광석의 위치를 이동.
+        go.transform.position = pos;
+        go.name = ironPrefab.name;
+        go.transform.SetParent(trans);
+    }
+
+    public void creatSmeltedIron()
+    {
+        Transform trans = GameObject.Find("Brazier").transform;
+        Vector3 pos = trans.position;
+        // 출현 위치를 조정.
+        // 철광석의 위치를 이동.
+        pos.y = 0.5f;
+
+        GameObject go = GameObject.Instantiate(this.smeltedIronPrefab, pos + new Vector3(1.0f, 0, -1.7f), Quaternion.Euler(0, 150, 0)) as GameObject;
+        // 철광석의 출현 포인트를 취득.
+        go.name = smeltedIronPrefab.name;
+        go.transform.SetParent(trans);
+
+        bool used = false;
+        if(!used)
+        {
+            used = true;
+            missonText.ChangeText("우주선을 고쳐 탈출하기");
+        }
+    }
+
+    
 
     // 사과를 출현시킨다.
     //public void respawnApple()
@@ -165,6 +212,7 @@ public class ItemRoot : MonoBehaviour
         go.gameObject.name = appleTreePrefab.name;
 
     }
+    
 
     // 들고 있는 아이템에 따른 ‘수리 진척 상태’를 반환
     public float getGainRepairment(GameObject item_go)
@@ -179,10 +227,10 @@ public class ItemRoot : MonoBehaviour
             Item.TYPE type = this.getItemType(item_go);
             switch (type)
             { // 들고 있는 아이템의 종류로 갈라진다.
-                case Item.TYPE.ROCK:
-                    gain = GameStatus.GAIN_REPAIRMENT_ROCK; break;
-                case Item.TYPE.PLANT:
-                    gain = GameStatus.GAIN_REPAIRMENT_PLANT; break;
+                case Item.TYPE.SMELTEDIRON:
+                    gain = GameStatus.GAIN_REPAIRMENT_SMELTEDIRON; break;
+                case Item.TYPE.LUMBER:
+                    gain = GameStatus.GAIN_REPAIRMENT_LUMBER; break;
             }
         }
         return (gain);
@@ -251,5 +299,10 @@ public class ItemRoot : MonoBehaviour
             }
         }
         return (regain);
+    }
+
+    public Tree getTree()
+    {
+        return tree;
     }
 }
