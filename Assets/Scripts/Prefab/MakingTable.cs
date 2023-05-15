@@ -136,8 +136,6 @@ public class MakingTable : MonoBehaviour
         }
         Destroy(InventoryManager.instance.GetPlayer().transform.GetChild(1).gameObject);        
         InventoryManager.instance.ReSetStoreObj();
-
-
     }
 
     private void BtnInteractive()

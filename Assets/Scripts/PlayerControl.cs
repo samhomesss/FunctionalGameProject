@@ -118,27 +118,23 @@ public class PlayerControl : MonoBehaviour
                                     // REPAIRING(수리) 상태로 이행.
                                     if (!this.key.action && this.key.action2) break; // 루프 탈출.
                                     this.next_step = STEP.REPAIRING;
-
                                     break;
                                 case Event.TYPE.BONFIRE:
                                     if (this.key.action && !this.key.action2) break; // 루프 탈출.
                                     this.next_step = STEP.MAKINGFIRE;
                                     break;
-
                                 case Event.TYPE.MINING:
                                     if (!this.key.action && this.key.action2) break; // 루프 탈출.
                                     this.next_step = STEP.MINING;
                                     break;
-                                case Event.TYPE.CASTING:
+                                case Event.TYPE.CASTING:  // 철 주조
                                     if (this.key.action && !this.key.action2) break; // 루프 탈출.
                                     this.next_step = STEP.CASTING;
                                     break;
-                                case Event.TYPE.FELLING:
+                                case Event.TYPE.FELLING:  // 벌목
                                     if (!this.key.action && this.key.action2) break; // 루프 탈출.
                                     this.next_step = STEP.FELLING;
                                     break;
-                               
-
                             }
                             break;
                         }
@@ -666,7 +662,7 @@ public class PlayerControl : MonoBehaviour
                 GUI.Label(new Rect(Screen.width / 2 - 50.0f, y, 200.0f, 20.0f), "철을 만드는중..", guistyle);
                 break;
         }
-        //Debug.Log(this.is_event_ignitable());
+        Debug.Log(this.is_event_ignitable());
 
         if (this.is_event_ignitable())
         { // 이벤트가 시작 가능한 경우.

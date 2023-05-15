@@ -92,8 +92,8 @@ public class SceneControl : MonoBehaviour
 
     void OnGUI()
     {
-        float pos_x = Screen.width * 0.1f;
-        float pos_y = Screen.height * 0.5f;
+        float pos_x = Screen.width * 0.02f;
+        float pos_y = Screen.height * 0.08f;
 
         switch (this.step)
         {
