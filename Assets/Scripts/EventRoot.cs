@@ -11,7 +11,7 @@ public class Event
         NONE = -1, // 없음.
         ROCKET = 0, // 우주선 수리.
         MINING,
-        CASTING,
+        CASTING,  // 주조
         BONFIRE,
         FELLING,
         TABLING,
@@ -45,7 +45,7 @@ public class EventRoot : MonoBehaviour
                 case "Table":
                     type = Event.TYPE.TABLING;
                     break;
-                default:    
+                default:
                     break;
             }
         }
@@ -67,43 +67,51 @@ public class EventRoot : MonoBehaviour
                 if (carried_item == Item.TYPE.SMELTEDIRON)  // 수정해야됨
                 {
                     ret = true; // '이벤트할 수 있어요！'라고 응답한다.
+                    break;
                 }
                 if (carried_item == Item.TYPE.LUMBER)  // 수정해야됨
                 {
                     ret = true; // '이벤트할 수 있어요！'라고 응답한다.
+                    break;
+                }
+                if (carried_item == Item.TYPE.HAMMER)  
+                {
+                    ret = true; // '이벤트할 수 있어요！'라고 응답한다.
+                    break;
                 }
                 break;
-
             case Event.TYPE.BONFIRE:
                 if(carried_item == Item.TYPE.APPLE)
                 {
                     ret = true;
+                    break;
                 }
                 if(carried_item == Item.TYPE.PLANT)
                 {
                     ret = true;
+                    break;
                 }
                 break;
             case Event.TYPE.MINING:
                 if (carried_item == Item.TYPE.PICKAXE)
                 {
                     ret = true;
+                    break;
                 }
                 break;
             case Event.TYPE.CASTING:
                 if (carried_item == Item.TYPE.IRON)
                 {
                     ret = true;
+                    break;
                 }
                 break;
             case Event.TYPE.FELLING:
                 if (carried_item == Item.TYPE.HANDSAW)
                 {
                     ret = true;
+                    break;
                 }
-                break;
-            case Event.TYPE.TABLING:
-                    ret = true;
                 break;
         }
         return (ret);

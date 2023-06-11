@@ -37,7 +37,7 @@ public class Apple : MonoBehaviour
         // 사과의 출현 포인트를 취득.
         Vector3 pos = transform.parent.position;
         // 출현 위치를 조정.
-        pos.y = 0.5f;
+        pos.y = 0.2f;
         float radius = transform.parent.GetComponent<SphereCollider>().radius;
         pos.x += Random.Range(-radius, radius);
         pos.z += Random.Range(-radius, radius);

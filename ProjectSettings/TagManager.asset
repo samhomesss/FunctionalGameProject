@@ -19,6 +19,7 @@ TagManager:
   - Brazier
   - SmeltedIron
   - Table
+  - RockRespawn
   layers:
   - Default
   - TransparentFX
@@ -29,7 +30,7 @@ TagManager:
   - 
   - Item
   - Event
-  - 
+  - Transparent
   - 
   - 
   - 

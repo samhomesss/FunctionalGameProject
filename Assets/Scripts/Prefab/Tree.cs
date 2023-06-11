@@ -12,15 +12,15 @@ public class Tree : MonoBehaviour
         fellingTreePrefab = Resources.Load<GameObject>("Prefab/Lumber");
     }
 
-    public void fellingTree()
+    public void fellingTree(GameObject obj)
     {
         // 출현 위치를 조정.
-        Vector3 pos = transform.position;
-        pos.y = 0.5f;
+        Vector3 pos = obj.transform.position;
+        pos.y = 0.3f;
         
-        GameObject go = GameObject.Instantiate(this.fellingTreePrefab, pos + new Vector3(1.0f, 0, -1.7f), Quaternion.Euler(90, 0, 0)) as GameObject;
+        GameObject go = GameObject.Instantiate(this.fellingTreePrefab, pos + new Vector3(1.0f, 0, -1.7f), Quaternion.identity) as GameObject;
         // 철광석의 위치를 이동.
         go.name = fellingTreePrefab.name;
-        Destroy(this.gameObject);
+        Destroy(obj);
     }
 }

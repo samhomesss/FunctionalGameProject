@@ -14,9 +14,9 @@ public class GameStatus : MonoBehaviour
     public static float CONSUME_SATIETY_PLANT = 0.01f;
 
     // 사과, 식물을 먹었을 때 각각의 체력 회복 정도.
-    public static float REGAIN_SATIETY_APPLE = 0.7f;
-    public static float REGAIN_SATIETY_PLANT = 0.3f;  // 공복 회복
-    public static float REGAIN_TEMPERATURE_PLANT = 0.4f;  // 모닥불 회복
+    public static float REGAIN_SATIETY_APPLE = 0.5f;
+    public static float REGAIN_SATIETY_PLANT = 0.2f;  // 공복 회복
+    public static float REGAIN_TEMPERATURE_PLANT = 0.3f;  // 모닥불 회복
     public static float REGAIN_TEMPERATURE_APPLE = 0.1f;
 
 
@@ -28,12 +28,13 @@ public class GameStatus : MonoBehaviour
     public GUIStyle guistyle; // 폰트 스타일.
     public GameObject bonfire = null;
 
-    public static float CONSUME_SATIETY_ALWAYS = 0.02f;  // 배고픔 감소정도
-    public static float CONSUME_BODYTEMPERATURE_ALWAYS = 0.01f;  // 체온 감소정도
+    public static float CONSUME_SATIETY_ALWAYS = 0.01f;  // 배고픔 감소정도
+    public static float CONSUME_BODYTEMPERATURE_ALWAYS = 0.005f;  // 체온 감소정도
+    public float consumeBonfire = 0.01f;  // 모닥불 감소 계수
     public static float ENJOY_THE_FIRE = 0.07f;  // 체온 회복 정도
-    public float consumeBonfire = 0.02f;  // 모닥불 감소 계수
-
+    
     Weather weather;
+    bool isAct = false;
 
     void Start()
     {
@@ -84,7 +85,7 @@ public class GameStatus : MonoBehaviour
     public bool isGameClear()
     {
         bool is_clear = false;
-        if (this.repairment >= 1.0f)
+        if (this.repairment >= 1.0f && isAct)
         { // 수리 정도가 100% 이상이면.
             is_clear = true; // 클리어했다.
         }
@@ -177,5 +178,14 @@ public class GameStatus : MonoBehaviour
         return weather;
     }
     
+    public void isSetHammer()
+    {
+        isAct = true;
+    }
+
+    public float GetRepairment()
+    {
+        return repairment;
+    }
     
 }
