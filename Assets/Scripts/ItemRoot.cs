@@ -178,7 +178,7 @@ public class ItemRoot : MonoBehaviour
         if(!used)
         {
             used = true;
-            missonText.ChangeText("우주선을 고쳐 탈출하기");
+            missonText.ChangeText("배를 고쳐 탈출하기");
         }
     }
 

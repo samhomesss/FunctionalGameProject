@@ -54,7 +54,7 @@ public class GameStatus : MonoBehaviour
         GUI.Label(new Rect(x, y, 200.0f, 20.0f), "체온:" + (this.bodyTemperature * 100.0f).ToString("000"), guistyle);
         x += 160;
         // 수리 정도를 표시.
-        GUI.Label(new Rect(x, y, 200.0f, 20.0f), "로켓 :" + (this.repairment * 100.0f).ToString("000"), guistyle);
+        GUI.Label(new Rect(x, y, 200.0f, 20.0f), "배 :" + (this.repairment * 100.0f).ToString("000"), guistyle);
         x += 160;
         GUI.Label(new Rect(x, y, 200.0f, 20.0f), "모닥불 :" + (this.temperature * 100.0f).ToString("000"), guistyle);
     }
